@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>오늘, 당신의 시간 — 오늘의 조언</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B1712;
+    --ink-soft: #2A241C;
+    --paper: #EDE6D6;
+    --paper-dim: #DDD3BC;
+    --seal: #A8332B;
+    --seal-dim: #7C231C;
+    --ochre: #B08D57;
+    --text-on-dark: #EDE6D6;
+    --text-on-dark-dim: #B7AE9B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--text-on-dark);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 460px;
+    padding: 32px 20px 64px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--ochre);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.4;
+    margin: 0 0 6px;
+  }
+
+  .sub {
+    font-size: 14px;
+    color: var(--text-on-dark-dim);
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 2px;
+    padding: 24px 20px;
+    position: relative;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--seal), var(--ochre));
+  }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--seal-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input[type="date"],
+  .field input[type="time"] {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--paper-dim);
+    background: transparent;
+    font-size: 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    padding: 8px 2px;
+    outline: none;
+  }
+  .field input:focus { border-bottom-color: var(--seal); }
+
+  .unknown-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .gender-row {
+    display: flex;
+    gap: 10px;
+  }
+  .gender-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    border: 1px solid var(--paper-dim);
+    background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .gender-btn.active {
+    border-color: var(--seal);
+    color: var(--seal);
+    font-weight: 700;
+  }
+
+  .submit-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+  }
+
+  .stamp-btn {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: var(--seal);
+    color: #fff;
+    border: none;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(168,51,43,0.35);
+    transition: transform 0.15s ease;
+    position: relative;
+  }
+  .stamp-btn:active { transform: scale(0.92); }
+  .stamp-btn .hanja { display:block; font-size: 26px; margin-bottom: 4px; }
+
+  .error-msg {
+    color: var(--seal);
+    font-size: 12px;
+    margin-top: 10px;
+    text-align: center;
+    display: none;
+  }
+
+  /* 결과 영역 */
+  #result {
+    margin-top: 36px;
+    display: none;
+  }
+
+  @keyframes stampIn {
+    0% { opacity: 0; transform: scale(1.4); }
+    60% { opacity: 1; transform: scale(0.96); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .result-seal {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--seal);
+    color: var(--seal);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 auto 20px;
+    animation: stampIn 0.5s ease-out;
+  }
+
+  .layers { margin-bottom: 28px; }
+
+  .layer {
+    border-left: 2px solid var(--paper-dim);
+    padding: 10px 0 10px 16px;
+    margin-left: 0;
+    opacity: 0;
+    animation: fadeSlide 0.5s ease forwards;
+  }
+  .layer:nth-child(1) { animation-delay: 0.05s; margin-left: 0; }
+  .layer:nth-child(2) { animation-delay: 0.2s;  margin-left: 14px; }
+  .layer:nth-child(3) { animation-delay: 0.35s; margin-left: 28px; }
+  .layer:nth-child(4) { animation-delay: 0.5s;  margin-left: 42px; border-left-color: var(--seal); }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .layer .tag {
+    font-size: 11px;
+    color: var(--ochre);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .layer .ganji {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-on-dark);
+    margin-right: 8px;
+  }
+  .layer .sentence {
+    font-size: 13.5px;
+    color: var(--text-on-dark-dim);
+    line-height: 1.6;
+  }
+  .layer:nth-child(4) .sentence { display: none; }
+
+  .today-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 8px 0 14px;
+    color: var(--text-on-dark);
+  }
+
+  .today-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .today-card {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 14px 16px;
+    position: relative;
+    border-radius: 2px;
+  }
+  .today-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--seal);
+  }
+  .today-card .cat {
+    font-size: 11px;
+    color: var(--seal-dim);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .today-card .txt {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .lead {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-on-dark-dim);
+  }
+  .lead a {
+    color: var(--ochre);
+    text-decoration: none;
+    font-weight: 700;
+    border-bottom: 1px solid var(--ochre);
+  }
+
+  .disclaimer {
+    margin-top: 40px;
+    font-size: 11px;
+    color: #6b6455;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .reset-row {
+    text-align: center;
+    margin-top: 18px;
+  }
+  .reset-link {
+    background: none;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    color: var(--text-on-dark-dim);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .reset-link:hover { color: var(--ochre); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="eyebrow">TIME &amp; DECISION</div>
+  <h1>오늘, 당신의<br/>시간을 읽습니다</h1>
+  <div class="sub">대운·세운·월운·일진, 네 겹의 시간이 오늘 어떻게 겹치는지 확인해보세요.</div>
+
+  <div class="card">
+    <div class="field">
+      <label>생년월일</label>
+      <input type="date" id="birthDate" required />
+    </div>
+    <div class="field">
+      <label>생시</label>
+      <input type="time" id="birthTime" />
+      <div class="unknown-row">
+        <input type="checkbox" id="timeUnknown" />
+        <label for="timeUnknown" style="margin:0;">생시를 몰라요 (정확도가 낮아질 수 있어요)</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>성별</label>
+      <div class="gender-row">
+        <button type="button" class="gender-btn" data-gender="F">여성</button>
+        <button type="button" class="gender-btn" data-gender="M">남성</button>
+      </div>
+    </div>
+
+    <div class="submit-wrap">
+      <button class="stamp-btn" id="submitBtn">
+        <span class="hanja">占</span>오늘의 조언
+      </button>
+    </div>
+    <div class="error-msg" id="errorMsg">생년월일과 성별을 확인해주세요.</div>
+  </div>
+
+  <div id="result">
+    <div class="result-seal">今日</div>
+
+    <div class="layers" id="layers"></div>
+
+    <div class="today-title">오늘, 조금 더 자세히 보면 —</div>
+    <div class="today-grid" id="todayGrid"></div>
+
+    <div class="lead">
+      매일 다른 조언, 놓치고 싶지 않다면<br/>
+      <a href="https://instagram.com/01_yujin_10" target="_blank">@01_yujin_10 팔로우하기</a>
+    </div>
+
+    <div class="reset-row">
+      <button type="button" class="reset-link" id="resetBtn">내 정보가 아닌가요? 다시 입력하기</button>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    이 결과는 사주명리 이론을 바탕으로 한 참고용 콘텐츠이며,<br/>절기 계산은 태양 황경 기반 자체 알고리즘으로 산출됩니다.
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   ENGINE — astro.js + ganji.js + pillars.js + advice.js + engine.js 통합
+   ========================================================= */
+
+// ---------- astro ----------
+const DEG2RAD = Math.PI / 180;
+
+function toJD(utcDate) { return utcDate.getTime() / 86400000 + 2440587.5; }
+function fromJD(jd) { return new Date((jd - 2440587.5) * 86400000); }
+function norm360(deg) { let d = deg % 360; if (d < 0) d += 360; return d; }
+
+function solarLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  const M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+  const Mrad = norm360(M) * DEG2RAD;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad)
+          + 0.000289 * Math.sin(3 * Mrad);
+  const trueLong = L0 + C;
+  const Omega = 125.04 - 1934.136 * T;
+  const apparentLong = trueLong - 0.00569 - 0.00478 * Math.sin(Omega * DEG2RAD);
+  return norm360(apparentLong);
+}
+
+function angleDiff(a, b) {
+  let d = (a - b) % 360;
+  if (d > 180) d -= 360;
+  if (d <= -180) d += 360;
+  return d;
+}
+
+function findSolarTermTime(targetDeg, approxUTC) {
+  let lowJD = toJD(approxUTC) - 7;
+  let highJD = toJD(approxUTC) + 7;
+  const f = (jd) => angleDiff(solarLongitude(jd), targetDeg);
+  let fLow = f(lowJD), fHigh = f(highJD);
+  let tries = 0;
+  while ((fLow > 0) === (fHigh > 0) && tries < 5) {
+    lowJD -= 7; highJD += 7;
+    fLow = f(lowJD); fHigh = f(highJD);
+    tries++;
+  }
+  for (let i = 0; i < 60; i++) {
+    const midJD = (lowJD + highJD) / 2;
+    const fMid = f(midJD);
+    if (Math.abs(fMid) < 1e-7 || highJD - lowJD < 1 / (24 * 60 * 2)) return fromJD(midJD);
+    if ((fLow > 0) === (fMid > 0)) { lowJD = midJD; fLow = fMid; }
+    else { highJD = midJD; }
+  }
+  return fromJD((lowJD + highJD) / 2);
+}
+
+const JIEQI_12 = [
+  { deg: 315, name: "입춘", approxMonth: 2, approxDay: 4 },
+  { deg: 345, name: "경칩", approxMonth: 3, approxDay: 5 },
+  { deg: 15,  name: "청명", approxMonth: 4, approxDay: 5 },
+  { deg: 45,  name: "입하", approxMonth: 5, approxDay: 5 },
+  { deg: 75,  name: "망종", approxMonth: 6, approxDay: 5 },
+  { deg: 105, name: "소서", approxMonth: 7, approxDay: 7 },
+  { deg: 135, name: "입추", approxMonth: 8, approxDay: 7 },
+  { deg: 165, name: "백로", approxMonth: 9, approxDay: 8 },
+  { deg: 195, name: "한로", approxMonth: 10, approxDay: 8 },
+  { deg: 225, name: "입동", approxMonth: 11, approxDay: 7 },
+  { deg: 255, name: "대설", approxMonth: 12, approxDay: 7 },
+  { deg: 285, name: "소한", approxMonth: 1, approxDay: 6 },
+];
+
+function getJieqiListForYear(year) {
+  const list = JIEQI_12.map((j) => {
+    const approxUTC = new Date(Date.UTC(year, j.approxMonth - 1, j.approxDay));
+    return { name: j.name, deg: j.deg, time: findSolarTermTime(j.deg, approxUTC) };
+  });
+  list.sort((a, b) => a.time - b.time);
+  return list;
+}
+
+// ---------- ganji ----------
+const STEMS = ["갑","을","병","정","무","기","경","신","임","계"];
+const STEMS_HANJA = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const BRANCHES = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
+const BRANCHES_HANJA = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const STEM_ELEMENT = [0,0,1,1,2,2,3,3,4,4];
+const STEM_YINYANG = [0,1,0,1,0,1,0,1,0,1];
+
+function ganjiFromIndex(idx) {
+  const i = ((idx % 60) + 60) % 60;
+  return { stemIdx: i % 10, branchIdx: i % 12 };
+}
+function ganjiLabel({stemIdx, branchIdx}) {
+  return {
+    text: `${STEMS[stemIdx]}${BRANCHES[branchIdx]}`,
+    hanja: `${STEMS_HANJA[stemIdx]}${BRANCHES_HANJA[branchIdx]}`,
+  };
+}
+function stepGanji({stemIdx, branchIdx}, direction) {
+  return {
+    stemIdx: ((stemIdx + direction) % 10 + 10) % 10,
+    branchIdx: ((branchIdx + direction) % 12 + 12) % 12,
+  };
+}
+function getYearGanji(saYear) {
+  const idx = ((saYear - 1984) % 60 + 60) % 60;
+  return ganjiFromIndex(idx);
+}
+const YEAR_STEM_TO_YIN_MONTH_START = {0:2,5:2, 1:4,6:4, 2:6,7:6, 3:8,8:8, 4:0,9:0};
+function getMonthGanji(yearStemIdx, monthBranchIdx) {
+  const startStem = YEAR_STEM_TO_YIN_MONTH_START[yearStemIdx];
+  const order = ((monthBranchIdx - 2) % 12 + 12) % 12;
+  return { stemIdx: (startStem + order) % 10, branchIdx: monthBranchIdx };
+}
+const DAY_STEM_TO_JA_HOUR_START = {0:0,5:0, 1:2,6:2, 2:4,7:4, 3:6,8:6, 4:8,9:8};
+function getHourGanji(dayStemIdx, hourBranchIdx) {
+  const startStem = DAY_STEM_TO_JA_HOUR_START[dayStemIdx];
+  return { stemIdx: (startStem + hourBranchIdx) % 10, branchIdx: hourBranchIdx };
+}
+function hourToBranchIdx(hour24) {
+  const h = ((hour24 + 1) % 24);
+  return Math.floor(h / 2) % 12;
+}
+const SIPSIN_NAMES = {
+  same_same:"비견", same_diff:"겁재",
+  gen_same:"식신", gen_diff:"상관",
+  ctrl_same:"편재", ctrl_diff:"정재",
+  ctrlBy_same:"편관", ctrlBy_diff:"정관",
+  genBy_same:"편인", genBy_diff:"정인",
+};
+function getSipsin(dayStemIdx, targetStemIdx) {
+  const dEl = STEM_ELEMENT[dayStemIdx], tEl = STEM_ELEMENT[targetStemIdx];
+  const sameYinYang = STEM_YINYANG[dayStemIdx] === STEM_YINYANG[targetStemIdx];
+  const suffix = sameYinYang ? "same" : "diff";
+  let relation;
+  if (tEl === dEl) relation = "same";
+  else if (tEl === (dEl+1)%5) relation = "gen";
+  else if (tEl === (dEl+2)%5) relation = "ctrl";
+  else if (tEl === (dEl+3)%5) relation = "ctrlBy";
+  else relation = "genBy";
+  return SIPSIN_NAMES[`${relation}_${suffix}`];
+}
+
+// ---------- pillars ----------
+const TRUE_SOLAR_CORRECTION_MIN = -32;
+const NAME_TO_MONTH_BRANCH = {입춘:2,경칩:3,청명:4,입하:5,망종:6,소서:7,입추:8,백로:9,한로:10,입동:11,대설:0,소한:1};
+
+function toBirthUTC({year,month,day,hour,minute}) {
+  return new Date(Date.UTC(year, month-1, day, hour-9, minute, 0));
+}
+function applyTrueSolarCorrection(utcDate) {
+  return new Date(utcDate.getTime() + TRUE_SOLAR_CORRECTION_MIN*60000);
+}
+function kstFields(utcDate) {
+  const shifted = new Date(utcDate.getTime() + 9*3600000);
+  return {
+    year: shifted.getUTCFullYear(), month: shifted.getUTCMonth()+1,
+    day: shifted.getUTCDate(), hour: shifted.getUTCHours(), minute: shifted.getUTCMinutes(),
+  };
+}
+function calendarDayIndex(y,m,d) {
+  return Math.round((Date.UTC(y,m-1,d) - Date.UTC(2024,0,1)) / 86400000);
+}
+function computeDayGanji(correctedUTC) {
+  const {year,month,day} = kstFields(correctedUTC);
+  const idx = calendarDayIndex(year,month,day);
+  return ganjiFromIndex(((idx%60)+60)%60);
+}
+function computeHourGanji(correctedUTC, dayStemIdx) {
+  const {hour} = kstFields(correctedUTC);
+  return getHourGanji(dayStemIdx, hourToBranchIdx(hour));
+}
+function getSaYearContext(correctedUTC) {
+  const {year} = kstFields(correctedUTC);
+  const findIpchun = (y) => getJieqiListForYear(y).find(j=>j.name==="입춘").time;
+  let saYear = year;
+  if (correctedUTC < findIpchun(year)) saYear = year - 1;
+  const jieqiList = [...getJieqiListForYear(saYear), ...getJieqiListForYear(saYear+1)]
+    .sort((a,b)=>a.time-b.time);
+  return { saYear, jieqiList };
+}
+function computeYearMonthGanji(correctedUTC) {
+  const {saYear, jieqiList} = getSaYearContext(correctedUTC);
+  const yearGanji = getYearGanji(saYear);
+  let current = jieqiList[0];
+  for (const j of jieqiList) { if (j.time <= correctedUTC) current = j; else break; }
+  const monthBranchIdx = NAME_TO_MONTH_BRANCH[current.name];
+  const monthGanji = getMonthGanji(yearGanji.stemIdx, monthBranchIdx);
+  return { saYear, yearGanji, monthGanji, jieqiList, currentJieqi: current };
+}
+function computeDaeun(correctedUTC, monthGanji, yearGanji, gender, jieqiList) {
+  const yinyang = STEM_YINYANG[yearGanji.stemIdx];
+  const isForward = (gender==="M" && yinyang===0) || (gender==="F" && yinyang===1);
+  const direction = isForward ? 1 : -1;
+  let prevJieqi=null, nextJieqi=null;
+  for (let i=0;i<jieqiList.length;i++){
+    if (jieqiList[i].time<=correctedUTC) prevJieqi=jieqiList[i];
+    if (jieqiList[i].time>correctedUTC && !nextJieqi) nextJieqi=jieqiList[i];
+  }
+  const msPerDay=86400000;
+  const daysDiff = isForward ? (nextJieqi.time-correctedUTC)/msPerDay : (correctedUTC-prevJieqi.time)/msPerDay;
+  const daeunStartAge = Math.max(1, Math.round(daysDiff/3));
+  const periods=[];
+  let cursor = {stemIdx:monthGanji.stemIdx, branchIdx:monthGanji.branchIdx};
+  for (let i=0;i<8;i++){
+    cursor = stepGanji(cursor, direction);
+    periods.push({ startAge: daeunStartAge+i*10, endAge: daeunStartAge+i*10+9, ganji: {...cursor} });
+  }
+  return { direction: isForward?"순행":"역행", daeunStartAge, periods };
+}
+function computeNatalChart({year,month,day,hour,minute,gender}) {
+  const birthUTC = toBirthUTC({year,month,day,hour,minute});
+  const correctedUTC = applyTrueSolarCorrection(birthUTC);
+  const {saYear, yearGanji, monthGanji, jieqiList} = computeYearMonthGanji(correctedUTC);
+  const dayGanji = computeDayGanji(correctedUTC);
+  const hourGanji = computeHourGanji(correctedUTC, dayGanji.stemIdx);
+  const daeun = computeDaeun(correctedUTC, monthGanji, yearGanji, gender, jieqiList);
+  return { input:{year,month,day,hour,minute,gender}, correctedUTC, saYear, yearGanji, monthGanji, dayGanji, hourGanji, daeun };
+}
+function computeCurrentPillars(nowUTC=new Date()) {
+  const correctedUTC = applyTrueSolarCorrection(nowUTC);
+  const {saYear, yearGanji, monthGanji} = computeYearMonthGanji(correctedUTC);
+  const dayGanji = computeDayGanji(correctedUTC);
+  return { saYear, yearGanji, monthGanji, dayGanji, correctedUTC };
+}
+
+// ---------- advice ----------
+const SIPSIN_TEXT = {
+  비견:{single:"자기 힘으로 밀고 나가는 흐름","일/실행":"남 눈치 보지 말고 스스로 판단해서 움직여도 좋아요.",관계:"의견을 굽히기보다 분명하게 표현하는 게 관계에 도움이 돼요.",재물:"큰 지출보다 자기 판단으로 관리하는 쪽이 유리해요."},
+  겁재:{single:"경쟁과 자극이 많은 흐름","일/실행":"경쟁하듯 서두르기보다 내 페이스를 지키는 게 나아요.",관계:"사소한 신경전에 휘말리지 않도록 한 박자 쉬어가세요.",재물:"충동적인 지출이나 무리한 투자는 피하는 게 좋아요."},
+  식신:{single:"표현하고 즐기는 흐름","일/실행":"아이디어를 실제로 풀어내기 좋은 시점이에요.",관계:"편안한 대화가 잘 풀리는 시점, 먼저 말을 걸어보세요.",재물:"작은 즐거움에 쓰는 소비 정도는 괜찮아요."},
+  상관:{single:"표현이 강해지는 흐름","일/실행":"하고 싶은 말이 많아지는 시점, 다듬어서 표현하세요.",관계:"말이 날카로워질 수 있으니 한 번 더 생각하고 전하세요.",재물:"과시성 지출을 조심하는 게 좋아요."},
+  편재:{single:"기회를 붙잡는 흐름","일/실행":"여러 일을 동시에 벌여도 감당할 수 있는 시점이에요.",관계:"폭넓게 사람을 만나기 좋은 시점이에요.",재물:"기회성 투자나 새로운 수익원을 살펴보기 좋아요."},
+  정재:{single:"차곡차곡 쌓는 흐름","일/실행":"꾸준하고 계획적인 방식이 잘 맞는 시점이에요.",관계:"신뢰를 쌓는 대화, 약속을 지키는 게 힘이 돼요.",재물:"예산 관리나 저축 계획을 점검하기 좋아요."},
+  편관:{single:"긴장과 도전의 흐름","일/실행":"부담스러운 일을 미루지 말고 정면으로 처리하세요.",관계:"껄끄러운 관계를 정리할 타이밍일 수 있어요.",재물:"예상치 못한 지출에 대비해두는 게 좋아요."},
+  정관:{single:"책임과 원칙의 흐름","일/실행":"원칙대로, 순서대로 처리하는 게 안전해요.",관계:"공적인 관계, 예의를 지키는 게 신뢰를 더해요.",재물:"계획에 없던 지출은 피하고 원칙대로 관리하세요."},
+  편인:{single:"생각이 많아지는 흐름","일/실행":"무리하게 진행하기보다 한 박자 쉬어가도 좋아요.",관계:"혼자만의 시간이 오히려 관계에도 도움이 돼요.",재물:"지출보다 정보 수집이나 공부에 투자하기 좋아요."},
+  정인:{single:"배우고 채우는 흐름","일/실행":"새로 배우거나 준비하는 데 집중하기 좋은 시점이에요.",관계:"조언을 구하거나 배움을 나누는 대화가 도움이 돼요.",재물:"교육이나 자기계발에 쓰는 지출은 아깝지 않아요."},
+};
+
+// ---------- engine ----------
+function getKoreanAge(birthYear, nowCorrectedUTC) {
+  const {year} = kstFields(nowCorrectedUTC);
+  return year - birthYear + 1;
+}
+function findApplicableDaeun(natalChart, koreanAge) {
+  const found = natalChart.daeun.periods.find(p => koreanAge>=p.startAge && koreanAge<=p.endAge);
+  if (found) return found.ganji;
+  if (koreanAge < natalChart.daeun.daeunStartAge) {
+    return { stemIdx: natalChart.monthGanji.stemIdx, branchIdx: natalChart.monthGanji.branchIdx };
+  }
+  return natalChart.daeun.periods[natalChart.daeun.periods.length-1].ganji;
+}
+function getTodayAdvice(birthInput, now=new Date()) {
+  const natalChart = computeNatalChart(birthInput);
+  const current = computeCurrentPillars(now);
+  const nowCorrectedUTC = applyTrueSolarCorrection(now);
+  const koreanAge = getKoreanAge(birthInput.year, nowCorrectedUTC);
+  const daeunGanji = findApplicableDaeun(natalChart, koreanAge);
+  const dayStemIdx = natalChart.dayGanji.stemIdx;
+
+  const daeunSipsin = getSipsin(dayStemIdx, daeunGanji.stemIdx);
+  const seUnSipsin = getSipsin(dayStemIdx, current.yearGanji.stemIdx);
+  const wolUnSipsin = getSipsin(dayStemIdx, current.monthGanji.stemIdx);
+  const ilJinSipsin = getSipsin(dayStemIdx, current.dayGanji.stemIdx);
+
+  return {
+    koreanAge,
+    layers: [
+      { tag:"대운 · 10년의 흐름", ganji: ganjiLabel(daeunGanji).text, sentence: `지금 당신은 ${SIPSIN_TEXT[daeunSipsin].single} 위에 있어요.` },
+      { tag:"세운 · 올해", ganji: ganjiLabel(current.yearGanji).text, sentence: `올해는 그 안에서 ${SIPSIN_TEXT[seUnSipsin].single}이 겹쳐 있어요.` },
+      { tag:"월운 · 이번 달", ganji: ganjiLabel(current.monthGanji).text, sentence: `이번 달은 ${SIPSIN_TEXT[wolUnSipsin].single}으로 미세하게 조정되고 있어요.` },
+      { tag:"일진 · 오늘", ganji: ganjiLabel(current.dayGanji).text, sentence: "" },
+    ],
+    today: {
+      "일/실행": SIPSIN_TEXT[ilJinSipsin]["일/실행"],
+      "관계": SIPSIN_TEXT[ilJinSipsin]["관계"],
+      "재물": SIPSIN_TEXT[ilJinSipsin]["재물"],
+    },
+  };
+}
+
+/* =========================================================
+   UI WIRING
+   ========================================================= */
+let selectedGender = null;
+const STORAGE_KEY = "sajuTodayAdviceInfo";
+
+const birthDateEl = document.getElementById("birthDate");
+const birthTimeEl = document.getElementById("birthTime");
+const timeUnknownEl = document.getElementById("timeUnknown");
+const errorMsgEl = document.getElementById("errorMsg");
+const layersEl = document.getElementById("layers");
+const todayGridEl = document.getElementById("todayGrid");
+const resultEl = document.getElementById("result");
+const cardEl = document.querySelector(".card");
+
+document.querySelectorAll(".gender-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedGender = btn.dataset.gender;
+  });
+});
+
+timeUnknownEl.addEventListener("change", (e) => {
+  birthTimeEl.disabled = e.target.checked;
+});
+
+function setGenderUI(gender) {
+  selectedGender = gender;
+  document.querySelectorAll(".gender-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.gender === gender);
+  });
+}
+
+function renderAdvice(dateVal, timeUnknown, timeVal, gender, { scroll = true } = {}) {
+  const [year, month, day] = dateVal.split("-").map(Number);
+  let hour = 12, minute = 0;
+  if (!timeUnknown && timeVal) {
+    [hour, minute] = timeVal.split(":").map(Number);
+  }
+
+  const result = getTodayAdvice({ year, month, day, hour, minute, gender });
+
+  layersEl.innerHTML = "";
+  result.layers.forEach(l => {
+    const div = document.createElement("div");
+    div.className = "layer";
+    div.innerHTML = `<span class="tag">${l.tag}</span><span class="ganji">${l.ganji}</span><span class="sentence">${l.sentence}</span>`;
+    layersEl.appendChild(div);
+  });
+
+  todayGridEl.innerHTML = "";
+  Object.entries(result.today).forEach(([cat, txt]) => {
+    const div = document.createElement("div");
+    div.className = "today-card";
+    div.innerHTML = `<span class="cat">${cat}</span><span class="txt">${txt}</span>`;
+    todayGridEl.appendChild(div);
+  });
+
+  resultEl.style.display = "block";
+  if (scroll) resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function saveBirthInfo(dateVal, timeUnknown, timeVal, gender) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ dateVal, timeUnknown, timeVal, gender }));
+}
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  const dateVal = birthDateEl.value;
+  const timeUnknown = timeUnknownEl.checked;
+  const timeVal = birthTimeEl.value;
+
+  if (!dateVal || !selectedGender) {
+    errorMsgEl.style.display = "block";
+    return;
+  }
+  errorMsgEl.style.display = "none";
+
+  saveBirthInfo(dateVal, timeUnknown, timeVal, selectedGender);
+  renderAdvice(dateVal, timeUnknown, timeVal, selectedGender);
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  localStorage.removeItem(STORAGE_KEY);
+  selectedGender = null;
+  birthDateEl.value = "";
+  birthTimeEl.value = "";
+  birthTimeEl.disabled = false;
+  timeUnknownEl.checked = false;
+  document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("active"));
+  resultEl.style.display = "none";
+  cardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// 저장된 정보가 있으면 자동으로 채우고 바로 오늘의 조언을 보여줌
+(function loadSavedInfo() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const { dateVal, timeUnknown, timeVal, gender } = JSON.parse(saved);
+    if (!dateVal || !gender) return;
+
+    birthDateEl.value = dateVal;
+    timeUnknownEl.checked = !!timeUnknown;
+    birthTimeEl.disabled = !!timeUnknown;
+    if (timeVal) birthTimeEl.value = timeVal;
+    setGenderUI(gender);
+
+    renderAdvice(dateVal, timeUnknown, timeVal, gender, { scroll: false });
+  } catch (e) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+})();
+
+</script>
+</body>
+</html>
