@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>결정 기록 + 사주 태깅 — 사용 설명서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Pretendard:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12203A;
+    --ink-soft:#3A4A63;
+    --paper:#F7F5F0;
+    --paper-2:#EFEBE1;
+    --jade:#2F6F62;
+    --jade-soft:#DDE9E5;
+    --brass:#B08D57;
+    --line:#D8D2C4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Pretendard', sans-serif; line-height:1.6; }
+  .mono{ font-family:'Roboto Mono', monospace; letter-spacing:0.02em; }
+  .serif{ font-family:'Noto Serif KR', serif; }
+
+  .wrap{ max-width:920px; margin:0 auto; padding:0 28px; }
+  section{ padding:70px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+
+  .eyebrow{
+    font-family:'Roboto Mono', monospace; font-size:12px; letter-spacing:0.14em;
+    text-transform:uppercase; color:var(--jade); display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .eyebrow::before{ content:''; width:22px; height:1px; background:var(--jade); }
+
+  h1,h2,h3{ font-family:'Noto Serif KR', serif; font-weight:700; color:var(--ink); }
+  h2{ font-size:27px; margin-bottom:10px; letter-spacing:-0.008em; }
+  h3{ font-size:16.5px; margin-bottom:8px; }
+  p{ color:var(--ink-soft); font-size:15px; }
+  .section-lede{ font-size:15px; color:var(--ink-soft); margin-bottom:36px; max-width:600px; }
+
+  /* Header */
+  .hero{ padding-top:100px; padding-bottom:56px; }
+  .hero .tag{ font-family:'Roboto Mono',monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--brass); margin-bottom:20px; }
+  .hero h1{ font-size:34px; line-height:1.36; letter-spacing:-0.01em; margin-bottom:18px; }
+  .hero p{ font-size:15.5px; max-width:560px; }
+  .hero .meta{ margin-top:24px; font-family:'Roboto Mono',monospace; font-size:12px; color:#8B8471; display:flex; gap:24px; flex-wrap:wrap;}
+
+  /* TOC */
+  .toc{ display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+  .toc a{
+    font-size:13px; color:var(--ink-soft); text-decoration:none; border:1px solid var(--line);
+    padding:7px 14px; border-radius:999px; font-family:'Roboto Mono',monospace;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .toc a:hover, .toc a:focus-visible{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+  /* Screen guide block: mockup + explanation side by side */
+  .screen-block{ display:grid; grid-template-columns:280px 1fr; gap:36px; align-items:start; margin-bottom:44px; }
+  .screen-block:last-child{ margin-bottom:0; }
+
+  /* Phone mockup */
+  .phone{
+    background:var(--ink); border-radius:22px; padding:10px; box-shadow:0 14px 30px rgba(18,32,58,0.18);
+  }
+  .phone-screen{ background:var(--paper); border-radius:14px; padding:18px 15px; min-height:340px; }
+  .ps-label{ font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--jade); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:10px;}
+  .ps-title{ font-family:'Noto Serif KR',serif; font-weight:700; font-size:15px; line-height:1.4; margin-bottom:12px; color:var(--ink); }
+  .ps-field{ background:var(--paper-2); border-radius:6px; padding:9px 11px; font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .ps-chip{ display:inline-block; font-size:11px; padding:5px 11px; border-radius:999px; border:1px solid var(--line); margin:0 6px 6px 0; color:var(--ink-soft); }
+  .ps-chip.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .ps-card{ background:#fff; border-radius:8px; padding:11px; margin-bottom:8px; border:1px solid var(--line); }
+  .ps-card .t1{ font-size:10.5px; color:var(--jade); font-family:'Roboto Mono',monospace; margin-bottom:4px;}
+  .ps-card .t2{ font-size:12.5px; color:var(--ink); font-weight:500; }
+  .ps-card .t3{ font-size:11px; color:#8B94A0; margin-top:4px; }
+  .ps-btn{ background:var(--ink); color:var(--paper); font-size:12px; text-align:center; border-radius:6px; padding:10px; margin-top:8px; }
+  .ps-fab{
+    width:32px; height:32px; border-radius:50%; background:var(--ink); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; font-size:16px; margin-left:auto; margin-top:10px;
+  }
+  .ps-flow{ background:var(--jade-soft); border-radius:6px; padding:10px 11px; font-size:11.5px; line-height:1.5; color:var(--ink); margin-bottom:6px; }
+  .ps-flow b{ color:var(--jade); font-family:'Roboto Mono',monospace; font-size:10px; display:block; margin-bottom:3px;}
+  .ps-stars{ font-size:12.5px; color:var(--brass); letter-spacing:2px; }
+
+  .screen-desc .num{ font-family:'Roboto Mono',monospace; font-size:11px; color:var(--jade); margin-bottom:8px; letter-spacing:0.08em;}
+  .screen-desc ul{ margin-top:12px; padding-left:0; list-style:none; }
+  .screen-desc li{ font-size:14px; color:var(--ink-soft); padding:8px 0 8px 20px; position:relative; border-top:1px solid var(--line); }
+  .screen-desc li:first-child{ border-top:none; }
+  .screen-desc li::before{ content:'—'; position:absolute; left:0; color:var(--jade); }
+  .screen-desc li b{ color:var(--ink); font-weight:600; }
+
+  @media (max-width:720px){
+    .screen-block{ grid-template-columns:1fr; }
+    .phone{ max-width:280px; }
+  }
+
+  /* FAQ */
+  .faq-item{ border-top:1px solid var(--line); padding:20px 0; }
+  .faq-item:last-child{ padding-bottom:0; }
+  .faq-q{ font-family:'Noto Serif KR',serif; font-weight:600; font-size:15px; line-height:1.5; margin-bottom:8px; color:var(--ink); display:flex; gap:10px;}
+  .faq-q .qmark{ color:var(--brass); flex-shrink:0; }
+  .faq-a{ font-size:14px; line-height:1.65; color:var(--ink-soft); padding-left:20px; }
+
+  /* Glossary */
+  .gloss-table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  .gloss-table th,.gloss-table td{ text-align:left; padding:13px 14px; font-size:13.5px; border-bottom:1px solid var(--line); }
+  .gloss-table th{ font-family:'Roboto Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--ink); }
+  .gloss-table td:nth-child(1){ font-family:'Roboto Mono',monospace; color:var(--ink-soft); width:120px; }
+  .gloss-table td:nth-child(2){ font-family:'Noto Serif KR',serif; font-weight:600; color:var(--jade); width:150px; }
+
+  .note{
+    background:var(--jade-soft); border-left:2px solid var(--jade); padding:16px 18px; font-size:13.5px;
+    color:var(--ink); border-radius:2px; margin-top:20px;
+  }
+
+  footer{ padding:50px 0 80px; text-align:center; }
+  footer p{ font-size:12px; color:#A39D8C; font-family:'Roboto Mono',monospace; }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="tag">Decision Blue 리서치 파일럿 · 내부 자료</div>
+    <h1>결정 기록 + 사주 태깅<br>사용 설명서</h1>
+    <p>이 문서는 파일럿 앱이 실제로 어떻게 동작하는지, 화면 단위로 설명합니다.
+    개발 착수 전 검토용 워크스루입니다.</p>
+    <div class="meta">
+      <span>기준일 · 2026.07.14</span>
+      <span>상태 · 구상안 (개발 착수 전)</span>
+    </div>
+    <div class="toc">
+      <a href="#onboarding">01 온보딩</a>
+      <a href="#home">02 홈 화면</a>
+      <a href="#add">03 기록 추가</a>
+      <a href="#detail">04 기록 상세</a>
+      <a href="#privacy">05 데이터 안내</a>
+      <a href="#glossary">06 용어 매핑</a>
+      <a href="#faq">07 FAQ</a>
+    </div>
+  </section>
+
+  <!-- ONBOARDING -->
+  <section id="onboarding">
+    <div class="eyebrow">01 — 처음 시작할 때</div>
+    <h2>온보딩</h2>
+    <p class="section-lede">사용자가 앱을 처음 열면, 두 가지만 입력받습니다 — 태어난 정보와, 데이터 활용 동의.</p>
+
+    <div class="screen-block">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ps-label">Step 1 / 2</div>
+          <div class="ps-title">시작하기 전에</div>
+          <div class="ps-field">생년월일 — 선택되지 않음</div>
+          <div class="ps-field">태어난 시각 — <span style="color:var(--jade)">모름 ✓</span></div>
+          <div class="note" style="margin-top:14px; font-size:12px; padding:11px 13px;">
+            회원님이 남긴 기록은 통계적으로만 익명 처리되어 Decision Blue의 행동재무 리서치에
+            함께 쓰일 수 있어요. 개인을 특정할 수 있는 정보는 포함되지 않으며, 언제든 마이페이지에서
+            거부하실 수 있습니다.
+          </div>
+          <div style="margin-top:8px;"><label style="font-size:11.5px; color:var(--ink-soft);"><input type="checkbox" style="margin-right:6px;">익명 리서치 활용에 동의합니다 (선택)</label></div>
+          <div class="ps-btn">시작하기</div>
+        </div>
+      </div>
+      <div class="screen-desc">
+        <div class="num">화면 동작</div>
+        <ul>
+          <li><b>생년월일·시각 입력</b> — 생시를 모르면 "모름"을 체크할 수 있고, 이 경우 시주 없이 계산돼요.</li>
+          <li><b>동의는 기본값 OFF</b> — 체크해야만 리서치 활용에 포함됩니다. 강제 항목이 아니에요.</li>
+          <li><b>동의는 되돌릴 수 있음</b> — 나중에 마이페이지에서 언제든 켜고 끌 수 있어요.</li>
+          <li><b>온보딩을 건너뛰어도</b> 기록은 먼저 남길 수 있고, 사주 정보는 나중에 추가하면 소급 태깅됩니다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="eyebrow">02 — 매번 열게 되는 화면</div>
+    <h2>홈 / 타임라인</h2>
+    <p class="section-lede">지금까지 기록한 결정들이 최신순으로 쌓이는 화면. 아무것도 없으면 첫 기록을 유도합니다.</p>
+
+    <div class="screen-block">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ps-label">이번 달 흐름</div>
+          <div class="ps-title" style="font-size:13.5px; line-height:1.5; margin-bottom:14px;">장기 주기 패턴 상 변화가 관찰되는 구간이에요</div>
+          <div class="ps-card">
+            <div class="t1">재무 결정</div>
+            <div class="t2">거래처 계약 재협상</div>
+            <div class="t3">진행중</div>
+          </div>
+          <div class="ps-card">
+            <div class="t1">이직</div>
+            <div class="t2">세 번째 오퍼 수락</div>
+            <div class="t3">완료 · <span class="ps-stars">★★★★☆</span></div>
+          </div>
+          <div class="ps-fab">+</div>
+        </div>
+      </div>
+      <div class="screen-desc">
+        <div class="num">화면 동작</div>
+        <ul>
+          <li><b>카드 리스트</b> — 카테고리·제목·상태(진행중/완료/무효)·평가 별점이 한눈에 보여요.</li>
+          <li><b>상단 요약 문구</b>는 그 달의 장기 주기 패턴을 관찰형 톤으로만 짧게 안내해요 (자문 톤 아님).</li>
+          <li><b>빈 상태</b>일 땐 "아직 기록이 없어요 + 첫 결정 기록해보기" 링크가 대신 노출됩니다.</li>
+          <li><b>+ 버튼</b>을 누르면 기록 추가 화면으로 이동해요.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADD -->
+  <section id="add">
+    <div class="eyebrow">03 — 기록을 남길 때</div>
+    <h2>기록 추가</h2>
+    <p class="section-lede">제목, 카테고리, 날짜, 메모 네 가지만 입력하면 저장 즉시 그 시점의 흐름이 자동으로 붙습니다.</p>
+
+    <div class="screen-block">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ps-title">결정 기록하기</div>
+          <div class="ps-field">제목 — "거래처 계약 재협상"</div>
+          <div style="margin:10px 0;">
+            <span class="ps-chip active">재무 결정</span>
+            <span class="ps-chip">이직</span>
+            <span class="ps-chip">연애</span>
+            <span class="ps-chip">기타</span>
+          </div>
+          <div class="ps-field">결정한 날 — 2026.07.14</div>
+          <div class="ps-field">메모 — (선택)</div>
+          <div class="ps-btn">저장하기</div>
+        </div>
+      </div>
+      <div class="screen-desc">
+        <div class="num">화면 동작</div>
+        <ul>
+          <li><b>카테고리는 칩 선택형</b> — "투자"는 단독 노출하지 않고 <b>재무 결정</b>으로 통합돼 있어요.</li>
+          <li><b>"기타" 선택 시</b> 하단에 메모 입력창이 추가로 나타나요.</li>
+          <li><b>결정한 날</b>은 기본값이 오늘이고, 과거 날짜로도 바꿀 수 있어요.</li>
+          <li><b>저장하면</b> 자동으로 그 시점의 흐름이 계산되어 상세 화면으로 이동해요.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETAIL -->
+  <section id="detail">
+    <div class="eyebrow">04 — 기록을 돌아볼 때</div>
+    <h2>기록 상세</h2>
+    <p class="section-lede">저장된 기록과, 그 시점의 흐름을 관찰형 문구로 함께 보여줍니다.</p>
+
+    <div class="screen-block">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ps-label">재무 결정 · 2026.07.14</div>
+          <div class="ps-title" style="font-size:14px;">거래처 계약 재협상</div>
+          <div class="ps-flow"><b>장기 주기 패턴</b>장기 주기 패턴 상 '전환' 구간으로 분류돼요.</div>
+          <div class="ps-flow"><b>월간 주기</b>이 시기 유사한 패턴을 보인 사용자들의 결정 빈도가 높았어요.</div>
+          <div class="ps-btn" style="background:transparent; color:var(--ink); border:1px solid var(--line);">결과 업데이트하기</div>
+        </div>
+      </div>
+      <div class="screen-desc">
+        <div class="num">화면 동작</div>
+        <ul>
+          <li><b>흐름 문구는 전부 관찰형</b> — "이 시기 결정 빈도가 높았다"처럼 서술하지, "좋은 시기예요"라고 자문하지 않아요.</li>
+          <li><b>생시 정보가 없으면</b> 시주 기반 지표는 자동으로 제외되고, 그 사실이 안내돼요.</li>
+          <li><b>결과 업데이트</b>를 누르면 결과 난 날 + 5점 척도(텍스트 라벨) 입력 모달이 열려요.</li>
+          <li><b>완료된 기록</b>은 이 버튼 대신 별점과 결과가 바로 표시돼요.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section id="privacy">
+    <div class="eyebrow">05 — 데이터는 어떻게 다뤄지나</div>
+    <h2>개인정보 · 리서치 활용 안내</h2>
+    <p class="section-lede">개발팀과 임원진이 함께 알아야 할 데이터 처리 원칙입니다.</p>
+    <div class="screen-desc" style="max-width:640px;">
+      <ul>
+        <li><b>분리 저장</b> — 생년월일시 같은 개인 식별 정보와, 결정 기록은 물리적으로 다른 테이블에 저장돼요.</li>
+        <li><b>익명화 뷰</b> — 동의한 사용자의 데이터만, user_id를 해시 처리한 뷰를 통해서만 리서치 자료로 집계돼요.</li>
+        <li><b>옵트인 원칙</b> — 동의 없이는 어떤 기록도 리서치 자료에 포함되지 않아요.</li>
+        <li><b>DB와 화면의 용어는 분리</b> — 내부 DB는 원 명리 용어(대운/일진 등)를 그대로 쓰지만, 사용자에게 보이는 화면은 학술·관찰형 라벨로만 노출돼요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section id="glossary">
+    <div class="eyebrow">06 — 화면에 쓰이는 말</div>
+    <h2>내부 용어 → 사용자 노출 라벨</h2>
+    <table class="gloss-table">
+      <tr><th>DB 필드</th><th>화면 노출 라벨</th><th>설명 톤</th></tr>
+      <tr><td>iljin (일진)</td><td>일별 지표</td><td>관찰형</td></tr>
+      <tr><td>wolun (월운)</td><td>월간 주기</td><td>관찰형</td></tr>
+      <tr><td>daeun_phase (대운)</td><td>장기 주기 패턴</td><td>관찰형</td></tr>
+      <tr><td>jeolgi_period (절기)</td><td>계절 구간</td><td>관찰형</td></tr>
+      <tr><td>category = "투자"</td><td>재무 결정</td><td>중립 명사</td></tr>
+    </table>
+    <div class="note">내부 검토·개발 시에는 원 용어를 그대로 사용하되, 사용자에게 보이는 모든 화면·카피는 이 표의 오른쪽 라벨만 사용합니다.</div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="eyebrow">07 — 자주 나올 질문</div>
+    <h2>FAQ</h2>
+
+    <div class="faq-item">
+      <div class="faq-q"><span class="qmark">Q.</span>생시를 모르면 앱을 못 쓰나요?</div>
+      <div class="faq-a">아니요. "모름"으로 표시하면 시주를 제외한 지표만으로 계속 이용할 수 있어요.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span class="qmark">Q.</span>결과가 영영 안 나오는 결정은 어떻게 하나요?</div>
+      <div class="faq-a">상태값에 "무효"가 있어서, 결정을 철회하거나 흐지부지된 경우 진행중 대신 무효로 표시할 수 있어요.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span class="qmark">Q.</span>동의를 나중에 철회하면 이미 쓰인 데이터는 어떻게 되나요?</div>
+      <div class="faq-a">이미 익명화되어 통계에 집계된 데이터는 개별 식별이 불가능한 상태라 소급 삭제가 어려워요. 이 점은 동의 문구에서 사전에 안내됩니다.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span class="qmark">Q.</span>기존 콘텐츠 채널과 같은 브랜드인가요?</div>
+      <div class="faq-a">아니요. 절기 계산 로직 등 기술적 기반은 재사용하지만, 별도 프로젝트로 운영되며 기존 개인 브랜드로 노출·브랜딩되지 않아요.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>DECISION BLUE · PILOT APP GUIDE · INTERNAL USE ONLY</p>
+  </footer>
+
+</div>
+</body>
+</html>
