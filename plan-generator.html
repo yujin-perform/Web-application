@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Generator — 목표를 경로로 그립니다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: #1B3A63; color: #DCEBF5;
+    font-family: 'IBM Plex Sans KR', sans-serif;
+  }
+  .bp-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(220,235,245,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220,235,245,0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .display { font-family: 'Space Grotesk', sans-serif; }
+
+  .wrap { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 40px 22px 60px; }
+
+  .eyebrow-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .eyebrow { font-size: 12px; letter-spacing: 3px; color: #8FADC4; }
+  .title { font-size: 28px; font-weight: 700; margin: 0 0 34px; color: #EDE6D6; line-height: 1.3; }
+
+  .card { border: 1px solid rgba(220,235,245,0.2); border-radius: 4px; padding: 26px; background: rgba(220,235,245,0.03); }
+  .label-eyebrow { font-size: 11px; letter-spacing: 2px; color: #8FADC4; margin-bottom: 20px; }
+
+  .field { margin-bottom: 26px; }
+  .field:last-of-type { margin-bottom: 30px; }
+  .field-label { font-size: 11px; color: #8FADC4; display: block; margin-bottom: 8px; }
+  .field input {
+    width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(220,235,245,0.3);
+    padding: 8px 2px; color: #EDE6D6; font-size: 17px; font-family: 'IBM Plex Sans KR', sans-serif;
+    color-scheme: dark;
+  }
+  .field input[type="date"] { font-family: 'IBM Plex Mono', monospace; }
+  .field input::placeholder { color: rgba(220,235,245,0.35); }
+  .field input:focus { outline: none; border-bottom-color: #E8623D; }
+
+  .error-msg { color: #E8623D; font-size: 13px; margin-bottom: 16px; }
+
+  .gen-btn {
+    width: 100%; background: #E8623D; color: #1B3A63; border: none; border-radius: 3px;
+    padding: 14px; font-size: 15px; font-weight: 700; font-family: 'IBM Plex Sans KR', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+  }
+  .gen-btn:active { transform: translateY(1px); }
+  .gen-btn:disabled { opacity: 0.7; cursor: default; }
+
+  .ghost-btn {
+    margin-top: 40px; background: transparent; border: 1px solid rgba(220,235,245,0.3); color: #DCEBF5;
+    border-radius: 3px; padding: 11px 18px; font-size: 13.5px; font-family: 'IBM Plex Sans KR', sans-serif;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .ghost-btn:hover { background: rgba(220,235,245,0.06); }
+
+  .title-block { border: 1px solid rgba(220,235,245,0.25); border-radius: 4px; margin-bottom: 40px; overflow: hidden; }
+  .tb-row { display: flex; }
+  .tb-row + .tb-row { border-top: 1px solid rgba(220,235,245,0.15); }
+  .tb-label { width: 92px; flex-shrink: 0; font-size: 11px; color: #8FADC4; padding: 10px 12px; background: rgba(220,235,245,0.04); }
+  .tb-value { padding: 10px 12px; font-size: 14px; color: #EDE6D6; }
+
+  .timeline-wrap { position: relative; padding-left: 34px; }
+  .timeline-line { position: absolute; left: 10px; top: 6px; bottom: 6px; width: 1px; background: rgba(220,235,245,0.3); }
+
+  .tl-item { position: relative; margin-bottom: 30px; animation: fadeSlide .4s ease both; }
+  .tl-dot { position: absolute; left: -24px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: #E8623D; }
+  .tl-now .tl-dot { left: -24px; top: 3px; width: 9px; height: 9px; background: #DCEBF5; }
+  .tl-now-label, .tl-target-label { font-size: 11px; color: #8FADC4; }
+  .tl-target-label { color: #E8623D; }
+  .tl-target .tl-flag { position: absolute; left: -28px; top: 2px; color: #E8623D; }
+
+  .tl-card { border: 1px solid rgba(220,235,245,0.18); border-radius: 3px; padding: 12px 14px; background: rgba(220,235,245,0.03); }
+  .tl-date { font-size: 10.5px; color: #E8623D; margin-bottom: 5px; }
+  .tl-title { font-size: 15.5px; font-weight: 600; color: #EDE6D6; margin-bottom: 3px; }
+  .tl-desc { font-size: 13px; color: #8FADC4; }
+
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; }
+
+  svg.icon { width: 16px; height: 16px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="bp-grid"></div>
+
+<div class="wrap">
+  <div class="eyebrow-row">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#E8623D" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.5" fill="#E8623D"/></svg>
+    <span class="mono eyebrow">PLAN GENERATOR</span>
+  </div>
+  <h1 class="display title">목표를 경로로 그립니다</h1>
+
+  <div class="card" id="formCard">
+    <div class="mono label-eyebrow">GOAL SPEC</div>
+
+    <div class="field">
+      <label class="mono field-label">키워드</label>
+      <input id="keywordInput" type="text" placeholder="예: 책 출간, 이직, 자격증 취득">
+    </div>
+
+    <div class="field">
+      <label class="mono field-label">목표 달성 희망일</label>
+      <input id="targetDateInput" type="date">
+    </div>
+
+    <div class="error-msg" id="errorMsg" style="display:none;"></div>
+
+    <button class="gen-btn" id="generateBtn">
+      <span id="btnIdle" style="display:flex; align-items:center; gap:8px;">
+        경로 생성하기
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#1B3A63" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+      <span id="btnLoading" style="display:none; align-items:center; gap:8px;">
+        <svg class="icon spin" viewBox="0 0 24 24" fill="none" stroke="#1B3A63" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+        경로 계산 중…
+      </span>
+    </button>
+  </div>
+
+  <div id="resultBlock" style="display:none;">
+    <div class="title-block" id="titleBlock"></div>
+
+    <div class="timeline-wrap">
+      <div class="timeline-line"></div>
+      <div id="timelineItems"></div>
+    </div>
+
+    <button class="ghost-btn" id="resetBtn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#DCEBF5" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      새 계획 만들기
+    </button>
+  </div>
+</div>
+
+<script>
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function toLocalISODate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parseLocalDate(str) { var p = str.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function dotDate(str) { return str ? str.replace(/-/g, '.') : ''; }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var todayStr = toLocalISODate(today);
+
+  var keywordInput = document.getElementById('keywordInput');
+  var targetDateInput = document.getElementById('targetDateInput');
+  targetDateInput.min = todayStr;
+
+  var errorMsg = document.getElementById('errorMsg');
+  var generateBtn = document.getElementById('generateBtn');
+  var btnIdle = document.getElementById('btnIdle');
+  var btnLoading = document.getElementById('btnLoading');
+  var formCard = document.getElementById('formCard');
+  var resultBlock = document.getElementById('resultBlock');
+  var titleBlock = document.getElementById('titleBlock');
+  var timelineItems = document.getElementById('timelineItems');
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+  function clearError() {
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = '';
+  }
+  function setLoading(isLoading) {
+    generateBtn.disabled = isLoading;
+    btnIdle.style.display = isLoading ? 'none' : 'flex';
+    btnLoading.style.display = isLoading ? 'flex' : 'none';
+  }
+
+  async function handleGenerate() {
+    var keyword = keywordInput.value.trim();
+    var targetDateStr = targetDateInput.value;
+
+    if (!keyword) { showError('키워드를 입력해주세요.'); return; }
+    if (!targetDateStr) { showError('목표 달성 희망일을 입력해주세요.'); return; }
+
+    var target = parseLocalDate(targetDateStr);
+    target.setHours(0, 0, 0, 0);
+    var totalDays = Math.round((target - today) / 86400000);
+
+    if (totalDays <= 0) { showError('목표일은 오늘 이후여야 해요.'); return; }
+
+    clearError();
+    setLoading(true);
+
+    var prompt = '다음 목표를 오늘부터 목표일까지의 실행 마일스톤으로 쪼개주세요.\n\n' +
+      '목표 키워드: "' + keyword + '"\n' +
+      '오늘 날짜: ' + todayStr + '\n' +
+      '목표 달성 희망일: ' + targetDateStr + '\n' +
+      '총 기간: ' + totalDays + '일\n\n' +
+      '이 기간 길이에 맞는 현실적인 개수(대략 4~8개, 기간이 짧으면 적게 길면 많게)의 마일스톤을 오늘과 목표일 사이에 순서대로 배치해주세요. ' +
+      '각 마일스톤은 구체적으로 실행 가능한 행동 단위여야 하고, title은 5자 내외의 짧은 명사구, description은 20자 내외의 짧은 문장이어야 합니다.\n\n' +
+      '반드시 아래 JSON 형식으로만 응답하세요. 설명, 마크다운, 코드블록 없이 순수 JSON 하나만 출력하세요:\n' +
+      '{"milestones":[{"date":"YYYY-MM-DD","title":"...","description":"..."}]}';
+
+    try {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      var data = await res.json();
+      var text = (data.content || []).map(function (b) { return b.text || ''; }).join('\n');
+      var clean = text.replace(/```json|```/g, '').trim();
+      var parsed = JSON.parse(clean);
+      if (!parsed.milestones || !parsed.milestones.length) throw new Error('empty');
+
+      renderResult(keyword, targetDateStr, totalDays, parsed.milestones);
+    } catch (e) {
+      showError('경로 생성에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderResult(keyword, targetDateStr, totalDays, milestones) {
+    var rows = [
+      ['TITLE', escapeHtml(keyword)],
+      ['START', dotDate(todayStr)],
+      ['TARGET', dotDate(targetDateStr)],
+      ['DURATION', totalDays + '일 · 약 ' + Math.round(totalDays / 7) + '주']
+    ];
+    titleBlock.innerHTML = rows.map(function (r) {
+      return '<div class="tb-row"><div class="mono tb-label">' + r[0] + '</div><div class="tb-value">' + r[1] + '</div></div>';
+    }).join('');
+
+    var html = '';
+    html += '<div class="tl-item tl-now" style="animation-delay:0s;">' +
+              '<div class="tl-dot"></div>' +
+              '<div class="mono tl-now-label">NOW · ' + dotDate(todayStr) + '</div>' +
+            '</div>';
+
+    milestones.forEach(function (m, i) {
+      html += '<div class="tl-item" style="animation-delay:' + ((i + 1) * 0.08) + 's;">' +
+                '<div class="tl-dot"></div>' +
+                '<div class="tl-card">' +
+                  '<div class="mono tl-date">' + dotDate(m.date) + '</div>' +
+                  '<div class="tl-title">' + escapeHtml(m.title || '') + '</div>' +
+                  '<div class="tl-desc">' + escapeHtml(m.description || '') + '</div>' +
+                '</div>' +
+              '</div>';
+    });
+
+    html += '<div class="tl-item tl-target" style="margin-bottom:0; animation-delay:' + ((milestones.length + 1) * 0.08) + 's;">' +
+              '<svg class="icon tl-flag" viewBox="0 0 24 24" fill="none" stroke="#E8623D" stroke-width="2"><path d="M5 3v18M5 4h11l-2 4 2 4H5"/></svg>' +
+              '<div class="mono tl-target-label">TARGET · ' + dotDate(targetDateStr) + '</div>' +
+            '</div>';
+
+    timelineItems.innerHTML = html;
+
+    formCard.style.display = 'none';
+    resultBlock.style.display = 'block';
+  }
+
+  function reset() {
+    resultBlock.style.display = 'none';
+    formCard.style.display = 'block';
+    clearError();
+  }
+
+  generateBtn.addEventListener('click', handleGenerate);
+  document.getElementById('resetBtn').addEventListener('click', reset);
+  [keywordInput, targetDateInput].forEach(function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleGenerate();
+    });
+  });
+</script>
+
+</body>
+</html>
