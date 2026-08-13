@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>부조록</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&display=swap" />
+<style>
+  :root{
+    --ink:#1A1A1A; --red:#BE3A34; --muted:#97948E;
+    --line:#EEEDEB; --soft:#F6F6F5; --white:#FFFFFF;
+    --serif:'Noto Serif KR','Apple SD Gothic Neo',serif;
+    --sans:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--sans);background:var(--white);color:var(--ink);line-height:1.5}
+  #app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:110px}
+
+  /* header */
+  .header{padding:30px 22px 18px}
+  .logo-row{display:flex;align-items:center;gap:10px}
+  .seal{width:30px;height:30px;background:var(--red);color:#fff;border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--serif);font-weight:900;font-size:15px}
+  .logo{font-family:var(--serif);font-weight:900;font-size:25px;letter-spacing:.02em}
+  .tagline{color:var(--muted);font-size:13px;margin-top:7px}
+
+  /* summary */
+  .summary{margin:0 22px 20px;border:1px solid var(--line);border-radius:14px;
+    display:flex;overflow:hidden}
+  .sum-col{flex:1;padding:15px 18px}
+  .sum-col + .sum-col{border-left:1px solid var(--line)}
+  .sum-label{font-size:12px;color:var(--muted);margin-bottom:5px}
+  .sum-num{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .sum-num.received{color:var(--red)}
+
+  /* tabs */
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin:0 22px 20px}
+  .tab{flex:1;background:none;border:none;font-family:var(--sans);font-size:15px;
+    font-weight:600;color:var(--muted);padding:12px 0;cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+  .body{padding:0 22px}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* inputs */
+  .input{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px 15px;
+    font-size:16px;font-family:var(--sans);background:var(--white);color:var(--ink);
+    outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+  .input:focus{border-color:var(--ink)}
+  .input::placeholder{color:#B8B5AF}
+  .label{display:block;font-size:13px;color:var(--muted);margin:18px 0 8px}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:var(--white);color:var(--ink);
+    border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500;
+    font-family:var(--sans);cursor:pointer;transition:all .12s}
+  .chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+
+  /* ledger list */
+  .list{border-top:1px solid var(--line)}
+  .row{display:flex;align-items:center;gap:12px;padding:15px 2px;border-bottom:1px solid var(--line)}
+  .row-main{flex:1;min-width:0}
+  .row-name{font-weight:700;font-size:16px;display:inline}
+  .badge{font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;margin-left:7px;
+    vertical-align:2px}
+  .badge.given{background:var(--soft);color:var(--muted)}
+  .badge.received{background:#FAECEB;color:var(--red)}
+  .row-sub{font-size:12.5px;color:var(--muted);margin-top:4px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .row-right{text-align:right;flex-shrink:0}
+  .row-amt{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+  .row-amt.received{color:var(--red)}
+  .del{border:none;background:none;color:#CFCCC6;font-size:12px;cursor:pointer;
+    padding:5px 0 0;font-family:var(--sans)}
+  .del.confirm{color:var(--red);font-weight:700}
+  .empty{text-align:center;color:var(--muted);padding:56px 0;font-size:14px;line-height:1.8}
+
+  /* buttons */
+  .btn{width:100%;border:none;border-radius:13px;padding:16px 0;font-size:16px;
+    font-weight:700;font-family:var(--sans);cursor:pointer;margin-top:22px;
+    transition:opacity .15s}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-ink{background:var(--ink);color:#fff}
+  .btn:disabled{opacity:.35}
+  .btn-ghost{width:100%;background:none;border:none;color:var(--muted);
+    padding:14px 0;font-size:14px;font-family:var(--sans);cursor:pointer}
+
+  /* past records box */
+  .past{margin-top:9px;font-size:13px;color:var(--muted);background:var(--soft);
+    border-radius:11px;padding:11px 13px;line-height:1.7;display:none}
+
+  /* envelope */
+  .env-wrap{display:none}
+  .envelope{width:176px;margin:26px auto 0;background:#fff;border:1.5px solid var(--ink);
+    border-radius:4px;padding:28px 0 22px;text-align:center;
+    box-shadow:0 10px 28px rgba(0,0,0,.09);animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.envelope{animation:none}}
+  .env-title{font-family:var(--serif);font-weight:600;font-size:17px;
+    letter-spacing:.35em;text-indent:.35em;margin-bottom:16px}
+  .env-amt{font-family:var(--serif);font-weight:900;font-size:27px;letter-spacing:-.01em}
+  .env-name{margin-top:14px;font-size:12px;color:var(--muted)}
+  .env-seal{width:22px;height:22px;background:var(--red);border-radius:4px;
+    margin:15px auto 0;opacity:.92}
+  .reasons{margin-top:20px;font-size:13.5px;color:var(--muted);line-height:1.85}
+  .reasons div{display:flex;gap:8px}
+  .reasons span:first-child{color:var(--red)}
+
+  /* add overlay */
+  #addView{position:fixed;inset:0;background:var(--white);z-index:40;display:none;
+    overflow-y:auto}
+  #addView.on{display:block}
+  .add-inner{max-width:480px;margin:0 auto;padding:0 22px 48px}
+  .add-head{display:flex;align-items:center;justify-content:space-between;padding:26px 0 4px}
+  .add-title{font-family:var(--serif);font-weight:900;font-size:21px}
+  .add-close{border:none;background:none;font-size:15px;color:var(--muted);
+    cursor:pointer;font-family:var(--sans);padding:6px}
+
+  /* fab */
+  .fab{position:fixed;bottom:26px;right:max(22px,calc(50% - 218px));width:56px;height:56px;
+    border-radius:50%;background:var(--red);color:#fff;font-size:27px;line-height:1;
+    border:none;box-shadow:0 5px 16px rgba(190,58,52,.38);cursor:pointer;z-index:20}
+  .fab:active{transform:scale(.94)}
+
+  button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="logo-row"><div class="seal">부</div><div class="logo">부조록</div></div>
+    <div class="tagline">주고받은 마음의 기록</div>
+  </div>
+
+  <div class="summary">
+    <div class="sum-col"><div class="sum-label">낸 돈</div><div class="sum-num" id="sumGiven">0원</div></div>
+    <div class="sum-col"><div class="sum-label">받은 돈</div><div class="sum-num received" id="sumReceived">0원</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" id="tabLedger">장부</button>
+    <button class="tab" id="tabReco">얼마 낼까</button>
+  </div>
+
+  <!-- 장부 -->
+  <div class="body view on" id="viewLedger">
+    <input class="input" id="searchInput" placeholder="이름으로 검색" style="margin-bottom:16px" />
+    <div class="list" id="ledgerList"></div>
+    <div class="empty" id="emptyMsg" style="display:none"></div>
+  </div>
+
+  <!-- 얼마 낼까 -->
+  <div class="body view" id="viewReco">
+    <span class="label" style="margin-top:0">이름 <span style="color:#B8B5AF">(선택 — 과거 내역 자동 반영)</span></span>
+    <input class="input" id="rcName" placeholder="예: 김민수" />
+    <div class="past" id="pastBox"></div>
+    <span class="label">관계</span>
+    <div class="chips" id="rcRelation"></div>
+    <span class="label">경조사 종류</span>
+    <div class="chips" id="rcType"></div>
+    <div id="attendRow">
+      <span class="label">참석 여부</span>
+      <div class="chips" id="rcAttend">
+        <button class="chip on" data-v="1">참석</button>
+        <button class="chip" data-v="0">미참석</button>
+      </div>
+    </div>
+    <button class="btn btn-red" id="recoBtn">얼마 낼지 알려줘</button>
+
+    <div class="env-wrap" id="envWrap">
+      <div class="envelope">
+        <div class="env-title" id="envTitle"></div>
+        <div class="env-amt" id="envAmt"></div>
+        <div class="env-name" id="envName"></div>
+        <div class="env-seal"></div>
+      </div>
+      <div class="reasons" id="reasons"></div>
+      <button class="btn btn-ink" id="useBtn">이 금액으로 기록하기</button>
+    </div>
+    <div style="height:36px"></div>
+  </div>
+
+  <button class="fab" id="fabBtn" aria-label="기록 추가">＋</button>
+</div>
+
+<!-- 기록 추가 -->
+<div id="addView">
+  <div class="add-inner">
+    <div class="add-head">
+      <div class="add-title">기록 추가</div>
+      <button class="add-close" id="addClose">닫기</button>
+    </div>
+    <span class="label">구분</span>
+    <div class="chips" id="addDirection">
+      <button class="chip on" data-v="given">낸 돈</button>
+      <button class="chip" data-v="received">받은 돈</button>
+    </div>
+    <span class="label">이름</span>
+    <input class="input" id="addName" placeholder="예: 김민수" />
+    <span class="label">관계</span>
+    <div class="chips" id="addRelation"></div>
+    <span class="label">경조사 종류</span>
+    <div class="chips" id="addType"></div>
+    <span class="label">금액</span>
+    <div class="chips" id="addQuick" style="margin-bottom:9px"></div>
+    <input class="input" id="addAmount" inputmode="numeric" placeholder="직접 입력 (원)" />
+    <span class="label">날짜</span>
+    <input class="input" id="addDate" type="date" />
+    <span class="label">메모 <span style="color:#B8B5AF">(선택)</span></span>
+    <input class="input" id="addMemo" placeholder="예: 강남 ○○웨딩홀" />
+    <button class="btn btn-red" id="addSave">장부에 기록</button>
+    <button class="btn-ghost" id="addCancel">취소</button>
+  </div>
+</div>
+
+<script>
+const RELATIONS=["지인","직장 동료","친구","친한 친구","친척","가족","기타"];
+const TYPES=["결혼식","장례식","돌잔치","기타"];
+const ENV={"결혼식":"祝 結婚","장례식":"賻 儀","돌잔치":"祝 첫돌","기타":"祝"};
+const BASE={
+  "결혼식":{"지인":50000,"직장 동료":100000,"친구":100000,"친한 친구":200000,"친척":200000,"가족":300000,"기타":50000},
+  "장례식":{"지인":50000,"직장 동료":100000,"친구":100000,"친한 친구":150000,"친척":200000,"가족":300000,"기타":50000},
+  "돌잔치":{"지인":50000,"직장 동료":50000,"친구":100000,"친한 친구":100000,"친척":100000,"가족":200000,"기타":50000},
+  "기타":{"지인":50000,"직장 동료":50000,"친구":50000,"친한 친구":100000,"친척":100000,"가족":100000,"기타":50000}
+};
+const QUICK=[30000,50000,100000,150000,200000,300000];
+const KEY="bujorok-data";
+
+let records=[];
+let confirmDel=null, confirmTimer=null;
+let rcState={relation:"친구",type:"결혼식",attend:true};
+let addState={direction:"given",relation:"친구",type:"결혼식"};
+let rcResult=null;
+
+const $=id=>document.getElementById(id);
+const fmt=n=>(n||0).toLocaleString("ko-KR");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const shortDate=iso=>iso?iso.split("-").join("."):"";
+
+/* ── 저장 ── */
+async function load(){
+  try{
+    if(typeof window.storage==="undefined")return;
+    const r=await window.storage.get(KEY);
+    if(r&&r.value)records=JSON.parse(r.value).records||[];
+  }catch(e){/* 첫 실행 */}
+}
+async function persist(){
+  try{
+    if(typeof window.storage==="undefined")return;
+    await window.storage.set(KEY,JSON.stringify({records}));
+  }catch(e){console.error("저장 실패",e)}
+}
+
+/* ── 칩 ── */
+function buildChips(elId,items,getVal,setVal){
+  const el=$(elId);
+  el.innerHTML=items.map(i=>'<button class="chip'+(getVal()===i?" on":"")+'" data-v="'+esc(i)+'">'+esc(i)+"</button>").join("");
+  el.addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    setVal(b.dataset.v);
+    el.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));
+  });
+}
+function bindToggle(elId,handler){
+  const el=$(elId);
+  el.addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    el.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));
+    handler(b.dataset.v);
+  });
+}
+
+/* ── 렌더 ── */
+function renderSummary(){
+  let g=0,r=0;
+  records.forEach(x=>x.direction==="given"?g+=x.amount:r+=x.amount);
+  $("sumGiven").textContent=fmt(g)+"원";
+  $("sumReceived").textContent=fmt(r)+"원";
+}
+function renderLedger(){
+  const q=$("searchInput").value.trim();
+  let list=[...records].sort((a,b)=>a.date<b.date?1:-1);
+  if(q)list=list.filter(x=>x.name.includes(q)||(x.memo||"").includes(q));
+  const box=$("ledgerList"),empty=$("emptyMsg");
+  if(list.length===0){
+    box.innerHTML="";
+    empty.style.display="block";
+    empty.innerHTML=q?"‘"+esc(q)+"’ 검색 결과가 없어요.":"아직 기록이 없어요.<br>오른쪽 아래 + 버튼으로 첫 기록을 남겨보세요.";
+    return;
+  }
+  empty.style.display="none";
+  box.innerHTML=list.map(x=>{
+    const rec=x.direction==="received";
+    return '<div class="row">'+
+      '<div class="row-main"><span class="row-name">'+esc(x.name)+'</span>'+
+      '<span class="badge '+(rec?"received":"given")+'">'+(rec?"받음":"냄")+"</span>"+
+      '<div class="row-sub">'+esc(x.relation)+" · "+esc(x.type)+" · "+shortDate(x.date)+(x.memo?" · "+esc(x.memo):"")+"</div></div>"+
+      '<div class="row-right"><div class="row-amt'+(rec?" received":"")+'">'+(rec?"+":"−")+fmt(x.amount)+"</div>"+
+      '<button class="del'+(confirmDel===x.id?" confirm":"")+'" data-id="'+x.id+'">'+(confirmDel===x.id?"삭제 확인":"삭제")+"</button></div></div>";
+  }).join("");
+}
+function renderPast(){
+  const n=$("rcName").value.trim(),box=$("pastBox");
+  if(!n){box.style.display="none";return}
+  const past=records.filter(x=>x.name===n).sort((a,b)=>a.date<b.date?1:-1);
+  if(past.length===0){box.style.display="none";return}
+  box.style.display="block";
+  box.innerHTML=past.map(p=>shortDate(p.date)+" · "+esc(p.type)+" · "+(p.direction==="received"?"받음":"냄")+" "+fmt(p.amount)+"원").join("<br>");
+}
+function hideResult(){rcResult=null;$("envWrap").style.display="none"}
+
+/* ── 추천 ── */
+function recommend(){
+  const base=BASE[rcState.type][rcState.relation];
+  const reasons=[];
+  let amount=base;
+  reasons.push(rcState.relation+" · "+rcState.type+" 기본 시세 "+fmt(base)+"원");
+  const name=$("rcName").value.trim();
+  if(name){
+    const past=records.filter(x=>x.name===name&&x.direction==="received");
+    if(past.length){
+      const maxR=Math.max(...past.map(x=>x.amount));
+      if(maxR>=amount){amount=maxR;reasons.push(name+"님께 받은 "+fmt(maxR)+"원 기준 — 받은 만큼 돌려주는 게 원칙");}
+      else reasons.push("과거 받은 금액("+fmt(maxR)+"원)보다 시세가 높아 시세 기준 적용");
+    }
+  }
+  if(rcState.type==="결혼식"){
+    if(rcState.attend&&amount<100000){amount=100000;reasons.push("참석해서 식사하는 경우 식대 고려, 최소 10만원 권장");}
+    if(!rcState.attend)reasons.push("미참석 시 이 금액 그대로, 또는 마음에 따라 조정");
+  }
+  amount=Math.round(amount/10000)*10000;
+  rcResult={amount,name:name||null,relation:rcState.relation,type:rcState.type};
+  $("envTitle").textContent=ENV[rcState.type];
+  $("envAmt").textContent=fmt(amount)+"원";
+  $("envName").textContent=name?name+"님께":"";
+  $("envName").style.display=name?"block":"none";
+  $("reasons").innerHTML=reasons.map(t=>"<div><span>·</span><span>"+esc(t)+"</span></div>").join("");
+  $("envWrap").style.display="block";
+}
+
+/* ── 추가 화면 ── */
+function openAdd(prefill){
+  addState={direction:"given",relation:"친구",type:"결혼식"};
+  $("addName").value="";$("addAmount").value="";$("addMemo").value="";
+  $("addDate").value=today();
+  if(prefill){
+    addState.relation=prefill.relation;addState.type=prefill.type;
+    $("addName").value=prefill.name||"";
+    $("addAmount").value=prefill.amount;
+  }
+  ["addDirection","addRelation","addType","addQuick"].forEach(syncChips);
+  updateSaveBtn();
+  $("addView").classList.add("on");
+  document.body.style.overflow="hidden";
+}
+function syncChips(elId){
+  const el=$(elId);
+  el.querySelectorAll(".chip").forEach(c=>{
+    let on=false;
+    if(elId==="addDirection")on=c.dataset.v===addState.direction;
+    else if(elId==="addRelation")on=c.dataset.v===addState.relation;
+    else if(elId==="addType")on=c.dataset.v===addState.type;
+    else if(elId==="addQuick")on=c.dataset.v===$("addAmount").value;
+    c.classList.toggle("on",on);
+  });
+}
+function closeAdd(){$("addView").classList.remove("on");document.body.style.overflow=""}
+function updateSaveBtn(){
+  $("addSave").disabled=!($("addName").value.trim()&&parseInt($("addAmount").value,10)>0);
+}
+function saveRecord(){
+  const amt=parseInt($("addAmount").value,10);
+  const name=$("addName").value.trim();
+  if(!name||!amt)return;
+  records.unshift({
+    id:Date.now()+""+Math.random().toString(36).slice(2,6),
+    direction:addState.direction,name,relation:addState.relation,type:addState.type,
+    amount:amt,date:$("addDate").value||today(),memo:$("addMemo").value.trim()
+  });
+  persist();
+  closeAdd();
+  switchTab("ledger");
+  renderSummary();renderLedger();renderPast();hideResult();
+}
+
+/* ── 탭 ── */
+function switchTab(t){
+  $("tabLedger").classList.toggle("on",t==="ledger");
+  $("tabReco").classList.toggle("on",t==="reco");
+  $("viewLedger").classList.toggle("on",t==="ledger");
+  $("viewReco").classList.toggle("on",t==="reco");
+}
+
+/* ── 초기화 ── */
+async function init(){
+  buildChips("rcRelation",RELATIONS,()=>rcState.relation,v=>{rcState.relation=v;hideResult()});
+  buildChips("rcType",TYPES,()=>rcState.type,v=>{
+    rcState.type=v;hideResult();
+    $("attendRow").style.display=v==="결혼식"?"block":"none";
+  });
+  bindToggle("rcAttend",v=>{rcState.attend=v==="1";hideResult()});
+  buildChips("addRelation",RELATIONS,()=>addState.relation,v=>addState.relation=v);
+  buildChips("addType",TYPES,()=>addState.type,v=>addState.type=v);
+  bindToggle("addDirection",v=>addState.direction=v);
+
+  const qEl=$("addQuick");
+  qEl.innerHTML=QUICK.map(a=>'<button class="chip" data-v="'+a+'">'+(a/10000)+"만</button>").join("");
+  qEl.addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    $("addAmount").value=b.dataset.v;
+    syncChips("addQuick");updateSaveBtn();
+  });
+
+  $("tabLedger").addEventListener("click",()=>switchTab("ledger"));
+  $("tabReco").addEventListener("click",()=>switchTab("reco"));
+  $("searchInput").addEventListener("input",renderLedger);
+  $("rcName").addEventListener("input",()=>{renderPast();hideResult()});
+  $("recoBtn").addEventListener("click",recommend);
+  $("useBtn").addEventListener("click",()=>{if(rcResult)openAdd(rcResult)});
+  $("fabBtn").addEventListener("click",()=>openAdd());
+  $("addClose").addEventListener("click",closeAdd);
+  $("addCancel").addEventListener("click",closeAdd);
+  $("addSave").addEventListener("click",saveRecord);
+  $("addName").addEventListener("input",updateSaveBtn);
+  $("addAmount").addEventListener("input",()=>{
+    $("addAmount").value=$("addAmount").value.replace(/[^0-9]/g,"");
+    syncChips("addQuick");updateSaveBtn();
+  });
+
+  $("ledgerList").addEventListener("click",e=>{
+    const b=e.target.closest(".del");if(!b)return;
+    const id=b.dataset.id;
+    if(confirmDel===id){
+      records=records.filter(x=>x.id!==id);
+      confirmDel=null;clearTimeout(confirmTimer);
+      persist();renderSummary();renderLedger();renderPast();
+    }else{
+      confirmDel=id;renderLedger();
+      clearTimeout(confirmTimer);
+      confirmTimer=setTimeout(()=>{confirmDel=null;renderLedger()},2500);
+    }
+  });
+
+  await load();
+  renderSummary();renderLedger();
+}
+init();
+</script>
+</body>
+</html>
