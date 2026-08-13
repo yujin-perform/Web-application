@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>궁합 교차 — Depth Lab</title>
+<meta name="description" content="같은 두 사람을 사주와 별이 각각 읽습니다. 두 체계가 같은 말을 할 때, 그리고 다른 말을 할 때 — 둘 다 답입니다." />
+<meta property="og:title" content="궁합 교차 — 사주 × 별" />
+<meta property="og:description" content="사주와 점성술이 같은 커플을 각각 읽으면 어떤 답이 나올까. 두 체계의 합의와 엇갈림까지 읽는 궁합." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&display=swap" />
+<style>
+  :root{
+    --ink:#191A1E; --ju:#B23A32; --lan:#2E3A59;
+    --muted:#8F8D93; --line:#ECECEF; --soft:#F7F7F8; --white:#fff;
+    --serif:'Noto Serif KR','Apple SD Gothic Neo',serif;
+    --sans:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--sans);background:var(--white);color:var(--ink);line-height:1.55}
+  #app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 22px 64px}
+
+  .brand{padding:30px 0 6px;font-size:12px;letter-spacing:.22em;color:var(--muted)}
+  h1{font-family:var(--serif);font-weight:900;font-size:27px;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:13.5px;margin-top:8px;line-height:1.7}
+  .lede b{color:var(--ju);font-weight:600}
+  .lede i{color:var(--lan);font-style:normal;font-weight:600}
+
+  .person{border:1px solid var(--line);border-radius:15px;padding:17px 16px;margin-top:16px}
+  .person-tag{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin-bottom:11px}
+  .field-label{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px}
+  .input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;
+    font-size:16px;font-family:var(--sans);background:var(--white);color:var(--ink);
+    outline:none;-webkit-appearance:none;appearance:none;transition:border-color .15s}
+  .input:focus{border-color:var(--ink)}
+  .input:disabled{background:var(--soft);color:var(--muted)}
+  .check{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:13.5px;color:var(--muted);cursor:pointer;user-select:none}
+  .check input{width:17px;height:17px;accent-color:var(--ink)}
+
+  .opts{margin-top:15px}
+  .btn{width:100%;border:none;border-radius:13px;padding:16px 0;font-size:16px;font-weight:700;
+    font-family:var(--sans);cursor:pointer;background:var(--ink);color:#fff;margin-top:20px}
+  .btn:disabled{opacity:.35}
+  .err{color:var(--ju);font-size:13px;margin-top:10px;display:none}
+
+  /* ── 결과 ── */
+  #result{display:none;margin-top:34px}
+  .share-card{border:1.5px solid var(--ink);border-radius:17px;padding:26px 20px 20px;background:#fff}
+  .type-eyebrow{font-size:12px;letter-spacing:.18em;color:var(--muted);text-align:center}
+  .type-name{font-family:var(--serif);font-weight:900;font-size:38px;text-align:center;margin-top:8px;letter-spacing:.02em}
+  .type-def{text-align:center;font-size:14px;color:var(--muted);margin-top:9px;line-height:1.7}
+  .pair-line{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;line-height:1.8}
+  .pair-line b{color:var(--ink);font-weight:600}
+
+  /* 일치 스펙트럼 — 시그니처 */
+  .spec{margin:22px 6px 4px}
+  .spec-track{position:relative;height:2px;background:var(--line);border-radius:2px}
+  .spec-dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;
+    transform:translate(-50%,-50%);border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+  .spec-dot.ju{background:var(--ju)}
+  .spec-dot.lan{background:var(--lan)}
+  .spec-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:9px}
+  .spec-legend{display:flex;justify-content:center;gap:16px;font-size:11.5px;color:var(--muted);margin-top:12px}
+  .spec-legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+  .spec-legend .l-ju::before{background:var(--ju)}
+  .spec-legend .l-lan::before{background:var(--lan)}
+
+  .axes{margin-top:22px;display:grid;gap:11px}
+  .axis{display:grid;grid-template-columns:44px 1fr 34px;align-items:center;gap:10px}
+  .axis-name{font-size:13px;font-weight:600}
+  .axis-bar{height:7px;background:var(--soft);border-radius:5px;overflow:hidden}
+  .axis-fill{height:100%;border-radius:5px;background:var(--ink);transition:width .5s ease}
+  .axis-val{font-size:12.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+  .wm{text-align:center;font-size:10.5px;letter-spacing:.24em;color:#C9C8CD;margin-top:20px}
+
+  .sect{margin-top:30px}
+  .sect-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dot.ju{background:var(--ju)} .dot.lan{background:var(--lan)}
+  .sect ul{list-style:none;margin-top:11px}
+  .sect li{font-size:14px;color:#45444A;padding:9px 0;border-bottom:1px solid var(--line);line-height:1.65}
+  .sect li:last-child{border-bottom:none}
+  .verdict{font-size:12px;color:var(--muted);margin-left:auto;font-weight:500}
+  .cross{margin-top:30px;background:var(--soft);border-radius:15px;padding:18px 17px}
+  .cross-title{font-size:13px;font-weight:700;letter-spacing:.06em;margin-bottom:9px}
+  .cross p{font-size:14px;line-height:1.85;color:#3B3A40}
+
+  .btn2{width:100%;border:1.5px solid var(--ink);border-radius:13px;padding:14px 0;font-size:15px;
+    font-weight:700;font-family:var(--sans);cursor:pointer;background:#fff;color:var(--ink);margin-top:26px}
+  .cta{display:block;text-align:center;text-decoration:none;background:var(--ink);color:#fff;
+    border-radius:13px;padding:15px 0;font-size:15px;font-weight:700;margin-top:10px}
+  .fine{font-size:11px;color:#B4B2B8;line-height:1.8;margin-top:26px}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="brand">DEPTH LAB</div>
+  <h1>궁합 교차</h1>
+  <p class="lede">같은 두 사람을 <b>사주</b>와 <i>별</i>이 각각 읽습니다.<br>두 체계가 같은 말을 할 때, 그리고 다른 말을 할 때 — 둘 다 답입니다.</p>
+
+  <div class="person">
+    <div class="person-tag">첫번째 사람</div>
+    <input class="input" id="nameA" placeholder="이름 (선택)" />
+    <span class="field-label">생년월일</span>
+    <input class="input" id="dateA" type="date" />
+    <span class="field-label">태어난 시간</span>
+    <input class="input" id="timeA" type="time" />
+    <label class="check"><input type="checkbox" id="ntA" />시간을 몰라요</label>
+  </div>
+
+  <div class="person">
+    <div class="person-tag">두번째 사람</div>
+    <input class="input" id="nameB" placeholder="이름 (선택)" />
+    <span class="field-label">생년월일</span>
+    <input class="input" id="dateB" type="date" />
+    <span class="field-label">태어난 시간</span>
+    <input class="input" id="timeB" type="time" />
+    <label class="check"><input type="checkbox" id="ntB" />시간을 몰라요</label>
+  </div>
+
+  <div class="opts">
+    <label class="check"><input type="checkbox" id="solarCorr" checked />진태양시 보정 (−30분) 적용</label>
+  </div>
+
+  <button class="btn" id="goBtn">교차 읽기</button>
+  <div class="err" id="errMsg">두 사람의 생년월일을 입력해주세요.</div>
+
+  <div id="result">
+    <div class="share-card" id="shareCard">
+      <div class="type-eyebrow">사주 × 별 궁합 교차</div>
+      <div class="type-name" id="typeName"></div>
+      <div class="type-def" id="typeDef"></div>
+      <div class="pair-line" id="pairLine"></div>
+      <div class="spec">
+        <div class="spec-track">
+          <div class="spec-dot ju" id="dotJu"></div>
+          <div class="spec-dot lan" id="dotLan"></div>
+        </div>
+        <div class="spec-labels"><span>역풍</span><span>순풍</span></div>
+        <div class="spec-legend"><span class="l-ju">사주의 소견</span><span class="l-lan">별의 소견</span></div>
+      </div>
+      <div class="axes" id="axes"></div>
+      <div class="wm">DEPTH LAB · GUNGHAP CROSS</div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-title"><span class="dot ju"></span>사주의 소견 <span class="verdict" id="vJu"></span></div>
+      <ul id="sajuLines"></ul>
+    </div>
+    <div class="sect">
+      <div class="sect-title"><span class="dot lan"></span>별의 소견 <span class="verdict" id="vLan"></span></div>
+      <ul id="astroLines"></ul>
+    </div>
+
+    <div class="cross">
+      <div class="cross-title">교차 종합</div>
+      <p id="crossText"></p>
+    </div>
+
+    <button class="btn2" id="saveBtn">결과 이미지 저장</button>
+    <a class="cta" href="https://open.kakao.com/o/sOwyVfEi" target="_blank" rel="noopener">더 깊은 해석 — Depth Lab 리포트</a>
+    <p class="fine" id="finePrint">한국 출생(KST) 기준 · 연·월주는 입춘/절입 순간 반영 · 야자시법 적용 · 진태양시 보정은 시주 판정에만 적용 · 시간 모름 시 사주는 삼주로, 달 위치는 정오 근사(±7°)로 계산 · 본 결과는 규칙 기반 참고용입니다</p>
+  </div>
+</div>
+
+<script>/* 궁합 교차 엔진 코어 — 만세력(사주) + 천문 계산(점성술) */
+(function (root) {
+  const RAD = Math.PI / 180, DEG = 180 / Math.PI;
+  const rev = (x) => { x = x % 360; return x < 0 ? x + 360 : x; };
+  const sinD = (x) => Math.sin(x * RAD), cosD = (x) => Math.cos(x * RAD);
+
+  // ── 율리우스일 (UTC) ──
+  function jdUTC(y, m, d, hourFrac) {
+    if (m <= 2) { y--; m += 12; }
+    const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+    return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5 + hourFrac / 24;
+  }
+
+  // ── 태양 황경 (Schlyter, 정확도 ~0.01°) ──
+  function sunState(d) { // d = JD - 2451543.5
+    const w = 282.9404 + 4.70935e-5 * d;
+    const e = 0.016709 - 1.151e-9 * d;
+    const M = rev(356.0470 + 0.9856002585 * d);
+    const E = M + e * DEG * sinD(M) * (1 + e * cosD(M));
+    const xv = cosD(E) - e, yv = Math.sqrt(1 - e * e) * sinD(E);
+    const v = Math.atan2(yv, xv) * DEG, r = Math.sqrt(xv * xv + yv * yv);
+    return { lon: rev(v + w), r, Ms: M, ws: w };
+  }
+  const sunLon = (jd) => sunState(jd - 2451543.5).lon;
+
+  // ── 달 황경 (Schlyter + 주요 섭동항, ~0.2°) ──
+  function moonLon(jd) {
+    const d = jd - 2451543.5;
+    const N = rev(125.1228 - 0.0529538083 * d);
+    const i = 5.1454;
+    const w = rev(318.0634 + 0.1643573223 * d);
+    const a = 60.2666, e = 0.054900;
+    const M = rev(115.3654 + 13.0649929509 * d);
+    let E = M + e * DEG * sinD(M) * (1 + e * cosD(M));
+    for (let k = 0; k < 5; k++) E = E - (E - e * DEG * sinD(E) - M) / (1 - e * cosD(E));
+    const xv = a * (cosD(E) - e), yv = a * Math.sqrt(1 - e * e) * sinD(E);
+    const v = Math.atan2(yv, xv) * DEG, r = Math.sqrt(xv * xv + yv * yv);
+    const xh = r * (cosD(N) * cosD(v + w) - sinD(N) * sinD(v + w) * cosD(i));
+    const yh = r * (sinD(N) * cosD(v + w) + cosD(N) * sinD(v + w) * cosD(i));
+    let lon = rev(Math.atan2(yh, xh) * DEG);
+    const s = sunState(d);
+    const Ls = rev(s.ws + s.Ms), Lm = rev(N + w + M);
+    const D = rev(Lm - Ls), F = rev(Lm - N), Ms = s.Ms, Mm = M;
+    lon += -1.274 * sinD(Mm - 2 * D) + 0.658 * sinD(2 * D) - 0.186 * sinD(Ms)
+      - 0.059 * sinD(2 * Mm - 2 * D) - 0.057 * sinD(Mm - 2 * D + Ms) + 0.053 * sinD(Mm + 2 * D)
+      + 0.046 * sinD(2 * D - Ms) + 0.041 * sinD(Mm - Ms) - 0.035 * sinD(D)
+      - 0.031 * sinD(Mm + Ms) - 0.015 * sinD(2 * F - 2 * D) + 0.011 * sinD(Mm - 4 * D);
+    return rev(lon);
+  }
+
+  // ── 행성 황경 (Schlyter 궤도요소 + 목/토 섭동) ──
+  const ELEM = {
+    Mercury: (d) => ({ N: 48.3313 + 3.24587e-5 * d, i: 7.0047 + 5e-8 * d, w: 29.1241 + 1.01444e-5 * d, a: 0.387098, e: 0.205635 + 5.59e-10 * d, M: rev(168.6562 + 4.0923344368 * d) }),
+    Venus: (d) => ({ N: 76.6799 + 2.46590e-5 * d, i: 3.3946 + 2.75e-8 * d, w: 54.8910 + 1.38374e-5 * d, a: 0.723330, e: 0.006773 - 1.302e-9 * d, M: rev(48.0052 + 1.6021302244 * d) }),
+    Mars: (d) => ({ N: 49.5574 + 2.11081e-5 * d, i: 1.8497 - 1.78e-8 * d, w: 286.5016 + 2.92961e-5 * d, a: 1.523688, e: 0.093405 + 2.516e-9 * d, M: rev(18.6021 + 0.5240207766 * d) }),
+    Jupiter: (d) => ({ N: 100.4542 + 2.76854e-5 * d, i: 1.3030 - 1.557e-7 * d, w: 273.8777 + 1.64505e-5 * d, a: 5.20256, e: 0.048498 + 4.469e-9 * d, M: rev(19.8950 + 0.0830853001 * d) }),
+    Saturn: (d) => ({ N: 113.6634 + 2.38980e-5 * d, i: 2.4886 - 1.081e-7 * d, w: 339.3939 + 2.97661e-5 * d, a: 9.55475, e: 0.055546 - 9.499e-9 * d, M: rev(316.9670 + 0.0334442282 * d) }),
+  };
+  function planetLon(name, jd) {
+    const d = jd - 2451543.5;
+    const el = ELEM[name](d);
+    let E = el.M + el.e * DEG * sinD(el.M) * (1 + el.e * cosD(el.M));
+    for (let k = 0; k < 6; k++) E = E - (E - el.e * DEG * sinD(E) - el.M) / (1 - el.e * cosD(E));
+    const xv = el.a * (cosD(E) - el.e), yv = el.a * Math.sqrt(1 - el.e * el.e) * sinD(E);
+    const v = Math.atan2(yv, xv) * DEG, r = Math.sqrt(xv * xv + yv * yv);
+    let xh = r * (cosD(el.N) * cosD(v + el.w) - sinD(el.N) * sinD(v + el.w) * cosD(el.i));
+    let yh = r * (sinD(el.N) * cosD(v + el.w) + cosD(el.N) * sinD(v + el.w) * cosD(el.i));
+    let lonh = rev(Math.atan2(yh, xh) * DEG);
+    const rh = Math.sqrt(xh * xh + yh * yh);
+    if (name === "Jupiter" || name === "Saturn") {
+      const Mj = ELEM.Jupiter(d).M, Msat = ELEM.Saturn(d).M;
+      let p = 0;
+      if (name === "Jupiter") {
+        p = -0.332 * sinD(2 * Mj - 5 * Msat - 67.6) - 0.056 * sinD(2 * Mj - 2 * Msat + 21)
+          + 0.042 * sinD(3 * Mj - 5 * Msat + 21) - 0.036 * sinD(Mj - 2 * Msat)
+          + 0.022 * cosD(Mj - Msat) + 0.023 * sinD(2 * Mj - 3 * Msat + 52) - 0.016 * sinD(Mj - 5 * Msat - 69);
+      } else {
+        p = 0.812 * sinD(2 * Mj - 5 * Msat - 67.6) - 0.229 * cosD(2 * Mj - 4 * Msat - 2)
+          + 0.119 * sinD(Mj - 2 * Msat - 3) + 0.046 * sinD(2 * Mj - 6 * Msat - 69) + 0.014 * sinD(Mj - 3 * Msat + 32);
+      }
+      lonh = rev(lonh + p);
+      xh = rh * cosD(lonh); yh = rh * sinD(lonh);
+    }
+    const s = sunState(d);
+    const xs = s.r * cosD(s.lon), ys = s.r * sinD(s.lon);
+    return rev(Math.atan2(yh + ys, xh + xs) * DEG);
+  }
+
+  function chartLongitudes(jd) {
+    return {
+      Sun: sunLon(jd), Moon: moonLon(jd),
+      Mercury: planetLon("Mercury", jd), Venus: planetLon("Venus", jd), Mars: planetLon("Mars", jd),
+      Jupiter: planetLon("Jupiter", jd), Saturn: planetLon("Saturn", jd),
+    };
+  }
+
+  // ── 절기: 태양 황경이 target(deg)을 지나는 JD 탐색 ──
+  function angDiff(a, b) { let x = rev(a - b); if (x > 180) x -= 360; return x; }
+  function findSolarTerm(targetLon, jdLo, jdHi) {
+    let lo = jdLo, hi = jdHi;
+    for (let k = 0; k < 50; k++) {
+      const mid = (lo + hi) / 2;
+      if (angDiff(sunLon(mid), targetLon) < 0) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // ── 사주 ──
+  const STEMS = "갑을병정무기경신임계";
+  const BRANCHES = "자축인묘진사오미신유술해";
+  const STEM_EL = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4]; // 목화토금수
+  const BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
+  let DAY_OFFSET = 49; // 검증 스크립트로 캘리브레이션
+
+  // 입력: 한국 출생 (KST=UTC+9). y,m,d,hh,mm 는 시계 시각.
+  // solarCorr: 진태양시 보정(-30분)을 시주 판정에 적용할지
+  function sajuChart(y, m, d, hh, mm, opts) {
+    opts = opts || {};
+    const hasTime = hh !== null && hh !== undefined;
+    const utcHourFrac = (hasTime ? hh + mm / 60 : 12) - 9; // KST→UTC
+    const jdBirth = jdUTC(y, m, d, utcHourFrac);
+
+    // 연주: 해당 연도 입춘(황경 315°) 기준
+    const ipchun = findSolarTerm(315, jdUTC(y, 1, 25, -9), jdUTC(y, 2, 15, -9));
+    const sajuYear = jdBirth < ipchun ? y - 1 : y;
+    const yearIdx = ((sajuYear - 4) % 60 + 60) % 60;
+    const yStem = yearIdx % 10, yBranch = yearIdx % 12;
+
+    // 월주: 출생 순간 태양 황경으로 절기월 산출 (인월=315°)
+    const lam = sunLon(jdBirth);
+    const ord = Math.floor(rev(lam - 315) / 30); // 0=인월 … 11=축월
+    const mBranch = (2 + ord) % 12;
+    const mStem = ((yStem % 5) * 2 + 2 + ord) % 10;
+
+    // 일주: 캘린더 날짜 기준 (자정 경계)
+    const jdn = Math.floor(jdUTC(y, m, d, 12 - 9) + 0.5);
+    const dayIdx = ((jdn + DAY_OFFSET) % 60 + 60) % 60;
+    const dStem = dayIdx % 10, dBranch = dayIdx % 12;
+
+    // 시주: 진태양시 보정 옵션 (-30분), 23시부터 자시
+    // 야자시법: 23시 이후 출생은 일주는 당일, 시주 천간은 다음날 일간의 시두를 따름
+    let hStem = null, hBranch = null;
+    if (hasTime) {
+      let t = hh * 60 + mm - (opts.solarCorr ? 30 : 0);
+      let stemBase = dStem;
+      if (t < 0) { t += 1440; /* 보정으로 전날 야자시가 됨 → 시두는 당일 일간 그대로 */ }
+      else if (t >= 1380) { stemBase = (dStem + 1) % 10; /* 야자시 */ }
+      hBranch = Math.floor(((t + 60) % 1440) / 120);
+      hStem = ((stemBase % 5) * 2 + hBranch) % 10;
+    }
+
+    const stems = [yStem, mStem, dStem].concat(hStem !== null ? [hStem] : []);
+    const branches = [yBranch, mBranch, dBranch].concat(hBranch !== null ? [hBranch] : []);
+    const elCount = [0, 0, 0, 0, 0];
+    stems.forEach((s) => elCount[STEM_EL[s]]++);
+    branches.forEach((b) => elCount[BRANCH_EL[b]]++);
+
+    return {
+      hasTime, jdBirth,
+      year: { stem: yStem, branch: yBranch }, month: { stem: mStem, branch: mBranch },
+      day: { stem: dStem, branch: dBranch }, hour: hasTime ? { stem: hStem, branch: hBranch } : null,
+      elCount,
+      text: {
+        year: STEMS[yStem] + BRANCHES[yBranch], month: STEMS[mStem] + BRANCHES[mBranch],
+        day: STEMS[dStem] + BRANCHES[dBranch], hour: hasTime ? STEMS[hStem] + BRANCHES[hBranch] : "―",
+      },
+    };
+  }
+
+  function astroChart(y, m, d, hh, mm) {
+    const hasTime = hh !== null && hh !== undefined;
+    const jd = jdUTC(y, m, d, (hasTime ? hh + mm / 60 : 12) - 9);
+    return { hasTime, longitudes: chartLongitudes(jd) };
+  }
+
+  const api = {
+    jdUTC, sunLon, moonLon, planetLon, chartLongitudes, findSolarTerm,
+    sajuChart, astroChart, STEMS, BRANCHES, STEM_EL, BRANCH_EL,
+    setDayOffset: (k) => { DAY_OFFSET = k; }, getDayOffset: () => DAY_OFFSET,
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.GunghapCore = api;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+const C = window.GunghapCore;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+const ZODIAC = ["양자리","황소자리","쌍둥이자리","게자리","사자자리","처녀자리","천칭자리","전갈자리","사수자리","염소자리","물병자리","물고기자리"];
+const zodiac = (lon) => ZODIAC[Math.floor(C ? (lon % 360) / 30 : 0)];
+
+/* ── 사주 관계 데이터 ── */
+const GANHAP = new Set(["0-5","1-6","2-7","3-8","4-9"]);
+const YUKHAP = new Set(["0-1","2-11","3-10","4-9","5-8","6-7"]);
+const SAMHAP = [[8,0,4],[11,3,7],[2,6,10],[5,9,1]];
+const WONJIN = new Set(["0-7","1-6","2-9","3-8","4-11","5-10"]);
+const pairKey = (a,b) => Math.min(a,b) + "-" + Math.max(a,b);
+
+/* ── 축: k끌림 i일상 g마찰 r뿌리 ── */
+function sajuFactors(A, B) {
+  const F = [];
+  const a = A.day.stem, b = B.day.stem;
+  if (GANHAP.has(pairKey(a, b))) F.push({k:3,r:2,t:"일간이 천간합 — 서로를 제 짝처럼 알아보는 구조"});
+  else {
+    const ea = C.STEM_EL[a], eb = C.STEM_EL[b];
+    if (ea === eb) F.push({i:1,g:1,t:"일간 비화 — 동질감과 경쟁심이 한 몸으로 온다"});
+    else if ((ea+1)%5 === eb || (eb+1)%5 === ea) F.push({i:2,r:1,t:"일간 상생 — 한쪽이 흐름을 대주며 순환하는 관계"});
+    else F.push({g:2,t:"일간 상극 — 주도권의 긴장이 관계의 기본값"});
+  }
+  const x = A.day.branch, y = B.day.branch;
+  if (YUKHAP.has(pairKey(x, y))) F.push({k:2,i:2,t:"일지 육합 — 생활 반경이 자연스럽게 겹친다"});
+  if (SAMHAP.some(gr => gr.includes(x) && gr.includes(y)) && x !== y) F.push({r:3,i:1,t:"일지 삼합 — 같은 목적지를 보는 배에 탄 관계"});
+  if (Math.abs(x - y) === 6) F.push({g:3,k:1,t:"일지 충 — 부딪히는 만큼 강하게 끌리는 자리"});
+  if (WONJIN.has(pairKey(x, y))) F.push({g:2,t:"일지 원진 — 이유 없이 거슬리는 순간이 주기적으로 온다"});
+  if (x === y) F.push({i:1,t:"일지가 같다 — 같은 자리에서 쉬는 사람들"});
+
+  let comp = 0;
+  for (let e = 0; e < 5; e++) {
+    if (A.elCount[e] === 0 && B.elCount[e] >= 2) comp++;
+    if (B.elCount[e] === 0 && A.elCount[e] >= 2) comp++;
+  }
+  if (comp >= 2) F.push({r:2,i:1,t:"서로 비어 있는 오행을 상대가 채워준다"});
+  else if (comp === 1) F.push({r:1,t:"한쪽의 빈 오행을 상대가 메워주는 구도"});
+  const maxA = A.elCount.indexOf(Math.max(...A.elCount)), maxB = B.elCount.indexOf(Math.max(...B.elCount));
+  if (maxA === maxB && A.elCount[maxA] >= 4 && B.elCount[maxB] >= 4) F.push({g:1,t:"같은 기운이 겹쳐 과열되기 쉬운 조합"});
+  return F;
+}
+
+/* ── 시나스트리 ── */
+const ASPECTS = [[0,8,"합"],[60,4,"육십각"],[90,6,"직각"],[120,6,"삼각"],[180,8,"충각"]];
+function findAspect(l1, l2) {
+  let d = Math.abs(l1 - l2) % 360; if (d > 180) d = 360 - d;
+  let best = null;
+  for (const [ang, orb, nm] of ASPECTS) {
+    const off = Math.abs(d - ang);
+    if (off <= orb && (!best || off < best.off)) best = {ang, off, nm};
+  }
+  return best;
+}
+const harm = (ang) => ang === 60 || ang === 120;
+const hard = (ang) => ang === 90 || ang === 180;
+
+const P_RULES = [
+  {p:["Sun","Moon"],   H:{k:2,i:2,t:"해와 달의 조화각 — 존재 방식과 감정 리듬이 맞물린다"}, D:{g:2,k:1,t:"해와 달이 어긋나는 각 — 서로의 기본값이 자주 부딪힌다"}, conj:"H"},
+  {p:["Moon","Moon"],  H:{i:3,t:"달끼리의 공명 — 말하지 않아도 통하는 정서"}, D:{g:2,t:"감정 처리 방식이 정반대 — 위로가 엇나가기 쉽다"}, conj:"H"},
+  {p:["Venus","Mars"], H:{k:3,t:"금성-화성 조화각 — 끌림의 회로가 직결돼 있다"}, D:{k:2,g:2,t:"금성-화성 긴장각 — 밀당이 자극이자 소모"}, conj:"H"},
+  {p:["Venus","Venus"],H:{i:2,t:"금성 공명 — 좋아하는 것의 결이 같다"}, D:{g:1,t:"취향의 문법이 다르다 — 사소한 선택에서 드러난다"}, conj:"H"},
+  {p:["Mercury","Mercury"],H:{i:2,t:"수성 공명 — 대화 채널이 같은 주파수"}, D:{g:2,t:"같은 말을 다르게 듣는 각 — 대화 방식의 충돌"}, conj:"H"},
+  {p:["Moon","Venus"], H:{k:1,i:2,t:"달-금성 조화각 — 다정함이 자연스럽게 오간다"}, D:{g:1,t:"애정 표현의 온도차가 있다"}, conj:"H"},
+  {p:["Sun","Sun"],    H:{i:1,t:"태양 조화각 — 삶의 방향이 나란하다"}, D:{g:1,t:"자아의 방향이 교차한다 — 각자의 무대가 필요"}, conj:"H"},
+  {p:["Mars","Mars"],  H:{k:1,t:"화성 조화각 — 추진 리듬이 맞는다"}, D:{g:3,t:"화성 충돌 — 화내는 방식까지 부딪힌다"}, conj:"D"},
+  {p:["Sun","Saturn"], H:{r:3,t:"토성이 닻 — 무게 있는 책임감으로 묶인다"}, D:{r:1,g:2,t:"토성의 시험 — 무겁지만 오래 남는 인연"}, conj:"H"},
+  {p:["Moon","Saturn"],H:{r:3,t:"달-토성 조화각 — 감정에 뼈대가 생긴다"}, D:{r:1,g:2,t:"달-토성 긴장각 — 서운함이 쌓이기 쉬운 구조"}, conj:"H"},
+  {p:["Venus","Saturn"],H:{r:2,t:"금성-토성 조화각 — 애정이 약속의 형태를 가진다"}, D:{g:1,r:1,t:"사랑에 조건이 붙는 느낌을 경계할 것"}, conj:"H"},
+  {p:["Sun","Jupiter"],H:{i:1,r:1,t:"목성의 관용 — 서로를 더 낫게 만든다"}, D:{g:1,t:"서로를 부풀리다 과열되기 쉽다"}, conj:"H"},
+  {p:["Moon","Jupiter"],H:{i:1,r:1,t:"달-목성 조화각 — 곁에 있으면 낙관이 생긴다"}, D:{g:1,t:"감정의 과잉 확장을 경계"}, conj:"H"},
+];
+
+function astroFactors(chA, chB) {
+  const F = [];
+  for (const rule of P_RULES) {
+    const [p1, p2] = rule.p;
+    const combos = p1 === p2 ? [[p1, p2]] : [[p1, p2], [p2, p1]];
+    let best = null;
+    for (const [x, y] of combos) {
+      const asp = findAspect(chA.longitudes[x], chB.longitudes[y]);
+      if (asp && (!best || asp.off < best.asp.off)) best = {asp};
+    }
+    if (!best) continue;
+    const a = best.asp;
+    let eff = null;
+    if (harm(a.ang)) eff = rule.H;
+    else if (hard(a.ang)) eff = rule.D;
+    else if (a.ang === 0) eff = rule.conj === "D" ? rule.D : rule.H;
+    if (eff) F.push(Object.assign({}, eff, {t: eff.t}));
+  }
+  return F;
+}
+
+/* ── 종합 ── */
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+function sumAxes(F) {
+  const s = {k:0,i:0,g:0,r:0};
+  F.forEach(f => { s.k += f.k||0; s.i += f.i||0; s.g += f.g||0; s.r += f.r||0; });
+  return s;
+}
+const tone = (s) => s.k + s.i + s.r - s.g * 1.2;
+const verdictLabel = (t) => t > 1.5 ? "순풍" : t < -1.5 ? "역풍" : "혼조";
+
+const TYPES = {
+  eclipse: ["월식형","사주와 별이 서로 다른 이야기를 하는 관계","어느 쪽이 맞는지가 아니라, 언제 어느 쪽이 켜지는지를 관찰하세요."],
+  flame:   ["불꽃형","타오르는 만큼 재도 남는 관계","싸움의 규칙을 먼저 정하면, 열은 동력이 됩니다."],
+  glass:   ["유리형","조심스럽게 다뤄야 맑게 유지되는 관계","부딪히는 지점을 피하기보다, 다루는 법을 배우는 게 관건."],
+  magnet:  ["자석형","설명보다 몸이 먼저 기우는 관계","끌림이 강할수록, 일상의 언어를 따로 배워두세요."],
+  root:    ["뿌리형","천천히, 그러나 깊게 내려가는 관계","속도가 느린 것이지 약한 것이 아닙니다."],
+  ondol:   ["온돌형","뜨겁기보다 오래 따뜻한 관계","권태처럼 보이는 순간이 사실 이 관계의 강점입니다."],
+  blank:   ["여백형","정해진 게 적어, 그려갈 수 있는 관계","차트가 비워둔 자리는 두 사람의 선택으로 채워집니다."],
+};
+function decideType(pct, tS, tA) {
+  if ((tS > 1.5 && tA < -1.5) || (tS < -1.5 && tA > 1.5)) return TYPES.eclipse;
+  if (pct.g >= 68 && pct.k >= 60) return TYPES.flame;
+  if (pct.g >= 68) return TYPES.glass;
+  if (pct.k >= 68 && pct.g < 50) return TYPES.magnet;
+  if (pct.r >= 68 && pct.r >= pct.k) return TYPES.root;
+  if (pct.i >= 66) return TYPES.ondol;
+  if (pct.k < 55 && pct.i < 55 && pct.g < 55 && pct.r < 55) return TYPES.blank;
+  const m = Math.max(pct.k, pct.i, pct.r);
+  return m === pct.k ? TYPES.magnet : m === pct.i ? TYPES.ondol : TYPES.root;
+}
+function crossParagraph(tS, tA) {
+  const pS = tS > 0, pA = tA > 0;
+  if (pS && pA) return "사주와 별이 같은 방향을 가리킵니다. 인연의 구조(사주)와 감정의 날씨(별)가 모두 순풍 — 이런 합의는 흔치 않습니다. 다만 순풍일수록 항로를 정하는 건 두 사람의 몫입니다.";
+  if (pS && !pA) return "사주는 인연의 구조가 견고하다고 말하고, 별은 감정의 날씨가 사납다고 말합니다. 뼈대는 튼튼한데 날씨가 잦은 집 — 무너질 관계는 아니지만, 우산은 늘 챙겨야 합니다.";
+  if (!pS && pA) return "별은 강하게 끌린다고 말하고, 사주는 구조적 긴장을 짚습니다. 날씨는 화창한데 지반이 무른 땅 — 감정만 믿고 깊이 짓기 전에, 기초 공사가 필요합니다.";
+  return "두 체계 모두 신중 신호를 보냅니다. 그럼에도 두 사람이 만났다면 그건 차트 밖의 변수 — 서로의 의지가 이 관계의 거의 전부라는 뜻입니다.";
+}
+
+/* ── 실행 ── */
+function parsePerson(suffix) {
+  const dv = $("date" + suffix).value;
+  if (!dv) return null;
+  const noTime = $("nt" + suffix).checked;
+  const tv = $("time" + suffix).value;
+  const [y, m, d] = dv.split("-").map(Number);
+  let hh = null, mm = null;
+  if (!noTime && tv) { const t = tv.split(":").map(Number); hh = t[0]; mm = t[1]; }
+  return { y, m, d, hh, mm, name: $("name" + suffix).value.trim() };
+}
+
+function run() {
+  const A = parsePerson("A"), B = parsePerson("B");
+  if (!A || !B) { $("errMsg").style.display = "block"; return; }
+  $("errMsg").style.display = "none";
+  const corr = $("solarCorr").checked;
+
+  const sA = C.sajuChart(A.y, A.m, A.d, A.hh, A.mm, {solarCorr: corr});
+  const sB = C.sajuChart(B.y, B.m, B.d, B.hh, B.mm, {solarCorr: corr});
+  const aA = C.astroChart(A.y, A.m, A.d, A.hh, A.mm);
+  const aB = C.astroChart(B.y, B.m, B.d, B.hh, B.mm);
+
+  const FS = sajuFactors(sA, sB);
+  const FA = astroFactors(aA, aB);
+  const axS = sumAxes(FS), axA = sumAxes(FA);
+  const raw = {k: axS.k + axA.k, i: axS.i + axA.i, g: axS.g + axA.g, r: axS.r + axA.r};
+  const pct = {
+    k: Math.round(clamp(30 + raw.k * 8, 12, 96)),
+    i: Math.round(clamp(30 + raw.i * 8, 12, 96)),
+    g: Math.round(clamp(30 + raw.g * 8, 12, 96)),
+    r: Math.round(clamp(30 + raw.r * 8, 12, 96)),
+  };
+  const tS = tone(axS), tA = tone(axA);
+  const type = decideType(pct, tS, tA);
+
+  $("typeName").textContent = type[0];
+  $("typeDef").textContent = type[1];
+
+  const nmA = esc(A.name || "첫번째 사람"), nmB = esc(B.name || "두번째 사람");
+  $("pairLine").innerHTML =
+    "<b>" + nmA + "</b> · " + sA.text.day + "일주 · 태양 " + zodiac(aA.longitudes.Sun) + " · 달 " + zodiac(aA.longitudes.Moon) + "<br>" +
+    "<b>" + nmB + "</b> · " + sB.text.day + "일주 · 태양 " + zodiac(aB.longitudes.Sun) + " · 달 " + zodiac(aB.longitudes.Moon);
+
+  const pos = (t) => clamp(50 + t * 9, 6, 94);
+  $("dotJu").style.left = pos(tS) + "%";
+  $("dotLan").style.left = pos(tA) + "%";
+
+  const AXN = [["끌림","k"],["일상","i"],["마찰","g"],["뿌리","r"]];
+  $("axes").innerHTML = AXN.map(([nm, key]) =>
+    '<div class="axis"><span class="axis-name">' + nm + '</span>' +
+    '<div class="axis-bar"><div class="axis-fill" style="width:' + pct[key] + '%"></div></div>' +
+    '<span class="axis-val">' + pct[key] + '</span></div>').join("");
+
+  const pick = (F) => F.slice().sort((p, q) =>
+    ((q.k||0)+(q.i||0)+(q.g||0)+(q.r||0)) - ((p.k||0)+(p.i||0)+(p.g||0)+(p.r||0))).slice(0, 4);
+  $("sajuLines").innerHTML = pick(FS).map(f => "<li>" + esc(f.t) + "</li>").join("") || "<li>특기할 상호작용이 적은 담백한 구조</li>";
+  $("astroLines").innerHTML = pick(FA).map(f => "<li>" + esc(f.t) + "</li>").join("") || "<li>주요 행성 간 뚜렷한 각이 적어, 서로에게 여백이 많은 하늘</li>";
+  $("vJu").textContent = "판정 · " + verdictLabel(tS);
+  $("vLan").textContent = "판정 · " + verdictLabel(tA);
+
+  let cp = crossParagraph(tS, tA);
+  cp += " " + type[2];
+  if (!sA.hasTime || !sB.hasTime) cp += " (한쪽 이상 출생 시간 미상 — 사주는 삼주 기준, 달의 각은 근사치로 읽었습니다.)";
+  $("crossText").textContent = cp;
+
+  $("result").style.display = "block";
+  if ($("result").scrollIntoView) $("result").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+/* ── 이미지 저장 ── */
+function saveImage() {
+  const go = () => window.html2canvas($("shareCard"), {scale: 2, backgroundColor: "#ffffff"}).then((cv) => {
+    const a = document.createElement("a");
+    a.download = "gunghap-cross.png";
+    a.href = cv.toDataURL("image/png");
+    a.click();
+  }).catch(() => alert("저장에 실패했어요. 화면 캡처를 이용해주세요."));
+  if (window.html2canvas) return go();
+  const s = document.createElement("script");
+  s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+  s.onload = go;
+  s.onerror = () => alert("저장 도구를 불러오지 못했어요. 화면 캡처를 이용해주세요.");
+  document.head.appendChild(s);
+}
+
+/* ── 입력값 저장/복원 (같은 기기 재방문 시 유지 · localStorage) ── */
+const IN_KEY = "gunghap-cross-inputs";
+const FIELDS = ["nameA","dateA","timeA","nameB","dateB","timeB"];
+let saveTimer = null;
+function saveInputs() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      const o = {};
+      FIELDS.forEach((id) => { o[id] = $(id).value; });
+      o.ntA = $("ntA").checked; o.ntB = $("ntB").checked;
+      o.solarCorr = $("solarCorr").checked;
+      localStorage.setItem(IN_KEY, JSON.stringify(o));
+    } catch (e) { /* 시크릿 모드 등 저장 불가 환경 — 무시 */ }
+  }, 400);
+}
+function restoreInputs() {
+  try {
+    const v = localStorage.getItem(IN_KEY);
+    if (!v) return;
+    const o = JSON.parse(v);
+    FIELDS.forEach((id) => { if (o[id] !== undefined) $(id).value = o[id]; });
+    $("ntA").checked = !!o.ntA; $("ntB").checked = !!o.ntB;
+    $("solarCorr").checked = o.solarCorr !== false;
+    $("timeA").disabled = $("ntA").checked;
+    $("timeB").disabled = $("ntB").checked;
+  } catch (e) { /* 저장된 값 없음 — 첫 방문 */ }
+}
+
+/* ── 바인딩 ── */
+["A","B"].forEach((sfx) => {
+  $("nt" + sfx).addEventListener("change", (e) => { $("time" + sfx).disabled = e.target.checked; saveInputs(); });
+});
+FIELDS.forEach((id) => $(id).addEventListener("input", saveInputs));
+$("solarCorr").addEventListener("change", saveInputs);
+$("goBtn").addEventListener("click", run);
+$("saveBtn").addEventListener("click", saveImage);
+restoreInputs();
+</script>
+</body>
+</html>
