@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>황유진 — 이력서 · 자기소개서</title>
+<meta name="description" content="황유진 이력서 및 자기소개서">
+<meta property="og:title" content="황유진 — 이력서 · 자기소개서">
+<meta property="og:description" content="데이터 감각과 물류·매장 실무 경험">
+<meta property="og:type" content="website">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --ink: #1c2430;
+    --body: #333c48;
+    --muted: #6b7683;
+    --accent: #1e4e66;
+    --rule: #dfe3e8;
+    --rule-strong: #1c2430;
+    --paper: #ffffff;
+    --desk: #eef0f2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+                 "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--desk);
+    color: var(--body);
+    line-height: 1.62;
+    font-size: 15px;
+    word-break: keep-all;
+    padding: 32px 16px 64px;
+  }
+
+  .sheet {
+    background: var(--paper);
+    max-width: 760px;
+    margin: 0 auto 28px;
+    padding: 56px 52px 60px;
+    box-shadow: 0 1px 3px rgba(28, 36, 48, .08), 0 8px 28px rgba(28, 36, 48, .07);
+  }
+
+  /* ---------- 공통 ---------- */
+  .doc-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -.01em;
+    line-height: 1.25;
+  }
+
+  h1 .sub {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-left: 10px;
+    letter-spacing: 0;
+  }
+
+  section { margin-top: 40px; }
+
+  h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--ink);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--rule-strong);
+    margin-bottom: 18px;
+  }
+
+  /* ---------- 기본 정보 ---------- */
+  .meta {
+    margin-top: 22px;
+    border-top: 2px solid var(--rule-strong);
+  }
+
+  .meta-row {
+    display: flex;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .meta-row dt {
+    flex: 0 0 88px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    padding-top: 1px;
+  }
+
+  .meta-row dd { flex: 1; color: var(--ink); }
+
+  /* ---------- 스킬 ---------- */
+  .skill-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .skill-row dt {
+    flex: 0 0 88px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    padding-top: 1px;
+  }
+
+  .skill-row dd { flex: 1; }
+
+  /* ---------- 경력 ---------- */
+  .job {
+    display: flex;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .job:last-child { border-bottom: none; }
+
+  .job-period {
+    flex: 0 0 128px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+    padding-top: 2px;
+  }
+
+  .job-body { flex: 1; }
+
+  .job-place {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+
+  .job-place .place-sub {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: 4px;
+  }
+
+  .job-body ul { list-style: none; }
+
+  .job-body li {
+    position: relative;
+    padding-left: 13px;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .job-body li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .68em;
+    width: 5px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+
+  /* ---------- 자기소개서 ---------- */
+  .cl-section { margin-top: 34px; }
+
+  .cl-eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: var(--accent);
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    padding: 2px 8px;
+    margin-bottom: 9px;
+  }
+
+  .cl-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+
+  .cl-section p { margin-bottom: 10px; }
+
+  .cl-section ul { list-style: none; }
+
+  .cl-section li {
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 8px;
+  }
+
+  .cl-section li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .68em;
+    width: 5px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+
+  .cl-section strong { color: var(--ink); font-weight: 700; }
+
+  /* ---------- 인쇄 안내 (화면에서만) ---------- */
+  .print-hint {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .print-hint button {
+    font: inherit;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 7px 18px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+
+  .print-hint button:hover { background: var(--accent); color: #fff; }
+  .print-hint button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- 모바일 ---------- */
+  @media (max-width: 640px) {
+    body { padding: 16px 10px 48px; font-size: 14.5px; }
+    .sheet { padding: 34px 24px 40px; }
+    h1 { font-size: 25px; }
+    h1 .sub { display: block; margin: 6px 0 0; }
+    .job { flex-direction: column; gap: 4px; }
+    .job-period { flex: none; padding-top: 0; }
+    .meta-row dt, .skill-row dt { flex-basis: 76px; }
+  }
+
+  /* ---------- 인쇄 ---------- */
+  @media print {
+    @page { size: A4; margin: 18mm 16mm; }
+    body { background: #fff; padding: 0; font-size: 10.5pt; }
+    .sheet {
+      box-shadow: none;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+    .sheet + .sheet { break-before: page; page-break-before: always; }
+    .print-hint { display: none; }
+    section, .cl-section { break-inside: avoid; page-break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 이력서 ===================== -->
+<article class="sheet">
+  <header>
+    <p class="doc-label">RESUME · 이력서</p>
+    <h1>황유진<span class="sub">2001년생 · 만 25세</span></h1>
+    <dl class="meta">
+      <div class="meta-row">
+        <dt>거주지</dt>
+        <dd>경기도 수원시 영통구 매탄동</dd>
+      </div>
+      <div class="meta-row">
+        <dt>학력</dt>
+        <dd>서울여자대학교 데이터사이언스학과 휴학 (2021.03 ~)</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>보유 역량 및 스킬</h2>
+    <dl>
+      <div class="skill-row">
+        <dt>오피스/전산</dt>
+        <dd>MS Excel, 구글 스프레드시트(함수/매크로 활용 감각), Notion, Slack, SPSS</dd>
+      </div>
+      <div class="skill-row">
+        <dt>직무 스킬</dt>
+        <dd>온라인 쇼핑몰 주문 취합, 창고 재고 관리 및 입출고 전산 등록, 택배 송장 출력 및 발송 처리, POS/전산 매칭</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <h2>경력 사항 <span style="font-weight:500; letter-spacing:0; color:var(--muted);">— 직무 연관성 중심</span></h2>
+
+    <div class="job">
+      <div class="job-period">2024.10 – 2025.08</div>
+      <div class="job-body">
+        <p class="job-place">오테이블<span class="place-sub">광교앨리웨이</span></p>
+        <ul>
+          <li>매장 POS 전산 운영 및 정산 관리</li>
+          <li>원부자재 소분, 재고 파악 및 관리</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="job-period">2023.05 – 2023.11</div>
+      <div class="job-body">
+        <p class="job-place">나이키</p>
+        <ul>
+          <li>매장 재고 입출고 파악 및 전산 대조</li>
+          <li>고객 맞춤 상품 추천 및 응대</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="job-period">2022.06 – 2022.10</div>
+      <div class="job-body">
+        <p class="job-place">백화점 귀금속 매장</p>
+        <ul>
+          <li>맞춤 제작(커스텀) 주문 접수 및 특이사항 전산 기록</li>
+          <li>POS 매출 관리 및 고객 A/S 접수·이력 관리</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="job-period">2019.08 – 2019.10</div>
+      <div class="job-body">
+        <p class="job-place">백화점 여성의류 매장</p>
+        <ul>
+          <li>온라인 주문 건 전산 확인 및 택배 포장/발송 업무</li>
+          <li>창고 입출고 실물 검수 및 전산 재고 수량 매칭</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="job-period">2019.05 – 2019.07</div>
+      <div class="job-body">
+        <p class="job-place">온라인 마케팅 회사</p>
+        <ul>
+          <li>온라인 데이터 정리, 바이럴 모니터링 및 문서 보조</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</article>
+
+<!-- ===================== 자기소개서 ===================== -->
+<article class="sheet">
+  <header>
+    <p class="doc-label">COVER LETTER · 자기소개서</p>
+    <h1 style="font-size:24px;">정확한 데이터 감각과 물류·매장 경험의 시너지</h1>
+  </header>
+
+  <div class="cl-section">
+    <span class="cl-eyebrow">지원동기</span>
+    <p>맞춤형 프리미엄 자동차용품점은 고객 맞춤 옵션에 따른 정확한 주문 확인과 오차 없는 재고 전산 관리가 핵심이라고 생각합니다. 저는 데이터사이언스를 전공하며 수치와 전산 데이터를 다루는 꼼꼼함을 길러왔으며, 다수의 온·오프라인 유통 현장에서 주문 처리, 창고 재고 입출고, 맞춤 주문 접수를 담당해 본 실무 경험이 있습니다. 복잡한 주문 데이터도 실수 없이 신속하게 전산화하여 매끄러운 출고와 경리 보조를 지원하고자 지원하였습니다.</p>
+  </div>
+
+  <div class="cl-section">
+    <span class="cl-eyebrow">직무 강점 1</span>
+    <p class="cl-title">0% 오차를 지향하는 입출고 및 온라인 주문 관리 능력</p>
+    <ul>
+      <li>의류 및 귀금속 매장 근무 당시, <strong>‘온라인 주문 수집 → 창고 재고 실물 확인 → 송장 출력 및 패키징 → 택배 발송 및 전산 차감’</strong>에 이르는 입출고 사이클을 전담한 경험이 있습니다.</li>
+      <li>귀금속 매장에서는 고객별 맞춤 주문(커스텀)의 디테일한 요청 사항을 누락 없이 접수·기록하며 검수의 정확도를 익혔습니다.</li>
+      <li>항상 ‘실물 재고’와 ‘전산 수량’이 100% 일치해야 한다는 원칙을 지키며, <strong>오출고율 0%</strong>를 유지했습니다.</li>
+      <li>프리미엄 자동차용품의 다양한 차종별/옵션별 주문 또한 헷갈림 없이 신속·정확하게 분별하여 처리하겠습니다.</li>
+    </ul>
+  </div>
+
+  <div class="cl-section">
+    <span class="cl-eyebrow">직무 강점 2</span>
+    <p class="cl-title">빠른 전산 툴 습득력 (엑셀, 구글 매크로, 이카운트 ERP)</p>
+    <ul>
+      <li>데이터사이언스 전공자로서 구글 스프레드시트, 엑셀, AI 기반 툴 등을 일상적으로 활용해 왔습니다.</li>
+      <li>새로운 소프트웨어나 전산 시스템에 대한 이해도가 높아, 본 매장에서 활용하는 <strong>구글 매크로, 이카운트 ERP, 택배 전산 프로그램</strong>을 인수인계 즉시 빠르게 마스터할 수 있습니다.</li>
+      <li>단순 반복 작업에서도 실수를 방지하기 위해 꼼꼼한 검산 루틴을 유지하며, 사무실의 원활한 업무 흐름을 돕는 든든한 경리·사무 보조가 되겠습니다.</li>
+    </ul>
+  </div>
+
+  <div class="cl-section">
+    <span class="cl-eyebrow">성격 및 근무 각오</span>
+    <p class="cl-title">원리원칙을 바탕으로 한 책임감과 성실함</p>
+    <p>제 업무 철학은 <strong>‘기준과 수치는 철저하게 원리원칙대로, 현장 협업은 유연하고 매끄럽게’</strong>입니다. 주문 누락이나 재고 불일치는 고객 신뢰와 직결되는 만큼, 사소한 숫자 하나도 재차 확인하는 책임감을 보여드리겠습니다.</p>
+    <p>인근(수원 매탄동)에 거주하고 있어 출퇴근이 용이하며, 약속된 2개월 계약 기간 동안 단 한 번의 지각이나 결근 없이 성실하고 쾌적하게 사무실 운영을 뒷받침하겠습니다.</p>
+  </div>
+</article>
+
+<div class="print-hint">
+  <p>브라우저에서 인쇄하면 이력서·자기소개서가 각각 A4 한 장으로 나뉘어 출력됩니다.</p>
+  <button type="button" onclick="window.print()">인쇄 / PDF로 저장</button>
+</div>
+
+</body>
+</html>
